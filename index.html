@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Neon Horde: Rebirth</title>
+        <link rel = "icon" href = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYcCZerv8-lawQztVUjK-v2nyvN1OUUxKmczDtY7DyQLV3dLTrxZgLQ6bpzH65JUC25Ps:https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Neon_discharge_tube.jpg/1200px-Neon_discharge_tube.jpg&usqp=CAU">
+    </head>
+    <body style = "margin: 0 !important; padding: 0 !important">
+        <canvas style = "background-color: black; display: block;" id = "gamescreen"></canvas>
+    </body>
+    <script>
+        const c = document.getElementById("gamescreen");
+        const cx = c.getContext("2d");
+        let ml;
+        let playerSize = 40;
+        let bulletSize = 100;
+        let playerYDirect = 0;
+        let playerXDirect = 0;
+        let playerSpeed = 5;
+        let shotDelay = 0;
+        let bulletSpeed = 20;
+        let playerDamage = 50;
+        let maxHealth = 2500;
+        let iframes = 300;
+        let invulnerable = false;
+        let health = maxHealth;
+        let shotAvailable = false;
+        let shooting = false;
+        let autofire = false;
+        let wave = 100;
+        let enemyCount = 0;
+        let skillIDCounter = 0;
+        let gameOver = false;
+        let pause = false;
+        let waveActive = true;
+        let spawnFinish = false;
+        let directorAggression = 1 + (wave - 1) * 0.1;
+        let directorCreditMulti = 50;
+        let baseCredits = 75;
+        let directorCredits = baseCredits + (wave - 1) * directorCreditMulti;
+        let waveDelay = 10; //delay in seconds between waves
+        let mouseX = 0;
+        let mouseY = 0;
+        let kills = 0;
+        let killedCost = 0;
+        let xp = 0;
+        let requiredXP = 20;
+        let totalXP = 0;
+        let preGameEnemyCycler = false;
+        let totalWeight = 0;
+        let globalEnemySpeedMulti = 1;
+        let enemyWaveCounter = 0;
+        let standardAlpha = 1;
+        let level = 1;
+        let skillPoints = 0;
+        let rerolls = Math.floor(wave/3);
+        let waveDelayCounter = 0;
+        let looperBullets = false;
+        let minCost;
+        let demonstrationMode = true;
+        let win = false;
+        const enemyStatBlock = [];
+        const bullets = [];
+        const bss = [];
+        const bullProperties = [];
+        const enemies = [];
+        const ess = [];
+        const enemyTrackerID = [];
+        const lasers = [];
+        const lss = [];
+        const laserTrackerID = [];
+        const aoes = [];
+        const areass = [];
+        const aoeTrackerID = [];
+        window.addEventListener("resize", resize, false);
+        window.addEventListener("keydown", keyhandler, false);
+        window.addEventListener("keyup", movestopper, false);
+        window.addEventListener("mousedown", clickhandler, false);
+        window.addEventListener("mouseup", shotstopper, false);
+        window.addEventListener("mousemove", mousehandler, false);
+        function clickhandler(){
+            shooting = true;
+        }
+        function shotstopper(){
+            shooting = false;
+        }
+        function mousehandler(){
+            mouseX = event.offsetX;
+            mouseY = event.offsetY;
+        }
+        function keyhandler(){
+            switch(event.code){
+                case "KeyW":
+                    playerYDirect = -1;
+                    break;
+                case "KeyS":
+                    playerYDirect = 1;
+                    break;
+                case "KeyD":
+                    playerXDirect = 1;
+                    break;
+                case "KeyA":
+                    playerXDirect = -1;
+                    break;
+                case "KeyQ":
+                    if(autofire == false){
+                        autofire = true;
+                    } else{
+                        autofire = false;
+                    }
+                    break;
+                case "KeyR":
+                    if(gameOver == true){
+                        location.reload();
+                    }
+                    break;
+                case "KeyE":
+                    if(pause == false && waveActive == false){
+                        pause = true;
+                        standardAlpha = 0.5;
+                    } else{
+                        pause = false;
+                        standardAlpha = 1;
+                    }
+                    break;
+                case "KeyZ":
+                    if(waveActive == false){
+                        waveDelayCounter = waveDelay * 50;
+                    }
+                    break;
+            }
+        }
+        function movestopper(){
+            if(event.code == "KeyW" || event.code == "KeyS"){
+                playerYDirect = 0;
+            } else if (event.code == "KeyD" || event.code == "KeyA"){
+                playerXDirect = 0;
+            }
+        }
+        function bulletSideStats(xmom, ymom, damage, speed){
+            this.xmom = xmom;
+            this.ymom = ymom;
+            this.damage = damage;
+            this.speed = speed;
+        }
+        function enemySideStats(type, shotavailable, currenthp, skillavailable){
+            this.hp = currenthp;
+            this.type = type;
+            this.shotavailable = shotavailable;
+            this.skillavailable = skillavailable;
+            this.skillactive = [];
+            this.randomPosX = Math.random();
+            this.randomPosY = Math.random();
+            this.healthBarCounter = 0;
+        }
+        function laserSideStats(duration, damage, length, enemyorigintrackerid, xdirect, ydirect, type, changetype, angle){
+            this.duration = duration;
+            this.damage = damage;
+            this.longness = length;
+            this.eoti = enemyorigintrackerid;
+            this.xdirect = xdirect;
+            this.ydirect = ydirect;
+            this.type = type;
+            this.changetype = changetype;
+            this.angle = angle;
+            this.originalAngle = angle;
+        }
+        function areasSideStats(duration, damage, healing, enemyorigintrackerid, damageconsume, healconsume){
+            this.duration = duration;
+            this.damage = damage;
+            this.healing = healing;
+            this.eoti = enemyorigintrackerid;
+            this.damageconsume = damageconsume;
+            this.healconsume = healconsume;
+        }
+        function bulletProperties(looper){
+            this.looping = looper;
+        }
+        class enemyTypeHolder{
+            constructor(type){
+                //notes: ai requirements
+                //moveai = follow: follow distance
+                //shotai != undefined: shotdelay, projectile size, projectile speed, projectile properties, projectiledamage
+                //skill != undefined: skilldelay, skillduration, skillmove (true/false) 
+                //skill laser: laserspeed, laserlength (1500 = max, reaches regardless), skillOrigin, lasersize, laserdamage, lasertype
+                //lasertype == sweep: sweep precision (lower = better)
+                //contact == true: survivecontact
+                //lasertype == predict: predictprecision (how far in the future, in ms, that the laser will aim)
+                //skill == aoe: aoesize, aoedamage (multiplier), aoehealing (flat), damageconsume, healconsume
+                switch(type){
+                    case 0:
+                    case "Basic":
+                        this.color = "gray";
+                        this.glowcolor = "red";
+                        this.effectsColor = "red";
+                        this.effectsGlowColor = "red";
+                        this.moveai = "Converge";
+                        this.shotai = undefined;
+                        this.skill = undefined;
+                        this.contact = true;
+                        this.surviveContact = false;
+                        this.size = 40;
+                        this.speed = 4;
+                        this.damage = 3;
+                        this.hp = 8;
+                        this.minWave = 1;
+                        this.maxWave = 10;
+                        this.cost = 10;
+                        this.reward = 1;
+                        this.weight = 6000;
+                        break;
+                    case 1:
+                    case "Shooter":
+                        this.color = "lightgrey";
+                        this.glowcolor = "orange";
+                        this.moveai = "Follow";
+                        this.shotai = "Basic";
+                        this.effectsColor = "red";
+                        this.effectsGlowColor = "red";
+                        this.skill = undefined;
+                        this.contact = true;
+                        this.surviveContact = false;
+                        this.size = 30;
+                        this.speed = 3;
+                        this.damage = 2;
+                        this.hp = 12;
+                        this.minWave = 3;
+                        this.maxWave = 20;
+                        this.cost = 20;
+                        this.reward = 1.5;
+                        this.weight = 3000;
+                        this.shotDelay = 2500;
+                        this.projectileSize = 100;
+                        this.projectileSpeed = 10;
+                        this.projectileDamage = 1;
+                        this.followDistance = 0.3;
+                        this.projectileProperties = new bulletProperties(false);
+                        break;
+                    case 3:
+                    case "Flayer":
+                        this.color = "darkorchid";
+                        this.glowcolor = "purple";
+                        this.effectsColor = "red";
+                        this.effectsGlowColor = "red";
+                        this.moveai = "Follow";
+                        this.shotai = "Basic";
+                        this.skill = undefined;
+                        this.contact = true;
+                        this.surviveContact = false;
+                        this.size = 30;
+                        this.speed = 3;
+                        this.damage = 4;
+                        this.hp = 16;
+                        this.minWave = 8;
+                        this.maxWave = Infinity;
+                        this.cost = 25;
+                        this.reward = 2;
+                        this.weight = 2000;
+                        this.shotDelay = 3500;
+                        this.projectileSize = 100;
+                        this.projectileSpeed = 3;
+                        this.projectileDamage = 1;
+                        this.followDistance = 0.45;
+                        this.projectileProperties = new bulletProperties(true);
+                        break;
+                    case 2:
+                    case "Mite":
+                        this.color = "gray";
+                        this.glowcolor = "gray";
+                        this.moveai = "Converge";
+                        this.effectsColor = "red";
+                        this.effectsGlowColor = "red";
+                        this.shotai = undefined;
+                        this.skill = undefined;
+                        this.contact = true;
+                        this.surviveContact = false;
+                        this.size = 60;
+                        this.speed = 7;
+                        this.damage = 4;
+                        this.hp = 8;
+                        this.minWave = 10;
+                        this.maxWave = Infinity;
+                        this.cost = 10;
+                        this.reward = 3;
+                        this.weight = 2500;
+                        break;
+                    case 5:
+                    case "Titan":
+                        this.color = "gray";
+                        this.glowcolor = "gray";
+                        this.moveai = "Converge";
+                        this.effectsColor = "red";
+                        this.effectsGlowColor = "red";
+                        this.shotai = undefined;
+                        this.skill = undefined;
+                        this.contact = true;
+                        this.surviveContact = false;
+                        this.size = 20;
+                        this.speed = 2;
+                        this.damage = 8;
+                        this.hp = 28;
+                        this.minWave = 10;
+                        this.maxWave = Infinity;
+                        this.cost = 10;
+                        this.reward = 3;
+                        this.weight = 2500;
+                        break;
+                    case 4:
+                    case "Tester":
+                        this.color = "black";
+                        this.glowcolor = "yellow";
+                        this.effectsColor = "goldenrod";
+                        this.effectsGlowColor = "orange";
+                        this.moveai = "Converge";
+                        this.shotai = undefined;
+                        this.skill = "Laser";
+                        this.contact = true;
+                        this.surviveContact = true;
+                        this.size = 30;
+                        this.speed = 6;
+                        this.damage = 25;
+                        this.hp = 10000;
+                        this.minWave = 1;
+                        this.maxWave = Infinity;
+                        this.cost = directorCredits;
+                        this.reward = Infinity;
+                        this.weight = Infinity;
+                        this.shotDelay = 20;
+                        this.projectileSize = 75;
+                        this.projectileSpeed = 5;
+                        this.followDistance = 0.5;
+                        this.projectileProperties = new bulletProperties(false);
+                        this.projectileDamage = 2;
+                        this.skillDelay = 20;
+                        this.skillDuration = 2500;
+                        this.skillMove = true;
+                        this.laserSpeed = 5;
+                        this.laserLength = 150;
+                        this.laserSize = 1;
+                        this.laserDamage = 0.01;
+                        this.skillOrigin = "TrueRandom";
+                        this.laserType = "Spin";
+                        this.predictPrecision = 1000;
+                        this.sweepPrecision = 45;
+                        this.aoeSize = 100;
+                        this.aoeWidth = 10;
+                        this.aoeDamage = 0.05;
+                        this.aoeHealing = 10000;
+                        this.damageConsume = false;
+                        this.healConsume = true;
+                        break;
+                    default:
+                        preGameEnemyCycler = true;
+                        break;
+                }
+            }
+        }
+        function begin(){
+            character = new squarecomponent(playerSize, playerSize, c.width/2, c.height/2, "white", "cyan");
+            let i = 0;
+            while(preGameEnemyCycler == false){
+                enemyStatBlock.push(new enemyTypeHolder(i));
+                if(preGameEnemyCycler == false){
+                    totalWeight += enemyStatBlock[i].weight;
+                }
+                i++;
+            }
+            enemyStatBlock.splice(enemyStatBlock.length - 1, 1);
+            minCostCalc();
+        }
+        begin();
+        function minCostCalc(){
+            minCost = Infinity;
+            for(let i = 0; i < enemyStatBlock.length; i++){
+                if(enemyStatBlock[i].cost < minCost && wave < enemyStatBlock[i].maxWave && wave >= enemyStatBlock[i].minWave){
+                    minCost = enemyStatBlock[i].cost;
+                }
+            }
+        }
+        function resize(){
+            let tempX = c.width/character.x;
+            let tempY = c.height/character.y;
+            let tempEnemyX = [];
+            let tempEnemyY = [];
+            let tempBulletX = [];
+            let tempBulletY = [];
+            let tempLaserStartY = [];
+            let tempLaserStartX = [];
+            let tempLaserEndX = [];
+            let tempLaserEndY = [];
+            for(let i = 0; i < enemies.length; i++){
+                tempEnemyX.push(c.width/enemies[i].x);
+                tempEnemyY.push(c.height/enemies[i].y);
+            }
+            for(let i = 0; i < bullets.length; i++){
+                tempBulletX.push(c.width/bullets[i].x);
+                tempBulletY.push(c.height/bullets[i].y);
+            }
+            for(let i = 0; i < lasers.length; i++){
+                tempLaserStartX.push(c.width/lasers[i].startx);
+                tempLaserStartY.push(c.height/lasers[i].starty);
+                tempLaserEndX.push(c.width/lasers[i].endx);
+                tempLaserEndY.push(c.height/lasers[i].endy);
+            }
+            c.width = window.innerWidth;
+            c.height = window.innerHeight;
+            ml = (c.height + c.width)/2;
+            for(let i = 0; i < enemies.length; i++){
+                enemies[i].x = c.width/tempEnemyX[i];
+                enemies[i].y = c.height/tempEnemyY[i];
+            }
+            for(let i = 0; i < bullets.length; i++){
+                bullets[i].x = c.width/tempBulletX[i];
+                bullets[i].y = c.height/tempBulletY[i];
+            }
+            for(let i = 0; i < lasers.length; i++){
+                lasers[i].startx = c.width/tempLaserStartX[i];
+                lasers[i].endx = c.width/tempLaserEndX[i];
+                lasers[i].starty = c.height/tempLaserStartY[i];
+                lasers[i].endy = c.height/tempLaserEndY[i];
+            }
+            character.x = c.width/tempX;
+            character.y = c.height/tempY;
+            render();
+        }
+        resize();
+        var gameRunner = setInterval(function generalUpdate(){
+            if(pause == false){
+                if(character.x > 0 && playerXDirect == -1 || character.x < c.width && playerXDirect == 1){
+                    character.x += ml/1000 * playerSpeed * playerXDirect;
+                }
+                if(character.y > 0 && playerYDirect == -1 || character.y < c.height && playerYDirect == 1){
+                    character.y += ml/1000 * playerSpeed * playerYDirect;
+                }
+                for(let i = 0; i < enemies.length; i++){
+                    ess[i].healthBarCounter--;
+                    ai(enemies[i], i);
+                    if(squareHitDetector(character.x, character.y, ml/character.width/2, ml/character.height/2, enemies[i].x, enemies[i].y, ml/enemies[i].width, ml/enemies[i].height) == true && invulnerable == false && enemyStatBlock[ess[i].type].contact == true){
+                        damagePlayer(enemyStatBlock[ess[i].type].damage, false);
+                        if(enemyStatBlock[ess[i].type].surviveContact == false){
+                            ess[i].hp = 0;
+                            killChecker(i);
+                        }
+                        break;
+                    }
+                }
+                if(shotAvailable == true && shooting == true || shotAvailable == true && autofire == true){
+                    shotCycler();
+                    let tempAimer = new aimer(character.x, character.y, mouseX, mouseY);
+                    bullets.push(new squarecomponent(bulletSize, bulletSize, character.x, character.y, "white", "cyan"));
+                    bss.push(new bulletSideStats(tempAimer.x, tempAimer.y, "Player", "Player"));
+                    bullProperties.push(new bulletProperties(looperBullets));
+                }
+                for(let i = 0; i < lasers.length; i++){
+                    if(lineHitDetector(lasers[i].startx, lasers[i].endx, lasers[i].starty, lasers[i].endy, lss[i].xdirect, lss[i].ydirect, lasers[i].size, character.x, character.y, ml/playerSize/2) == true){
+                        let statCaller = enemyStatBlock[ess[enemyTrackerID.indexOf(lss[i].eoti)].type];
+                        damagePlayer(statCaller.damage * statCaller.laserDamage, true);
+                    }
+                }
+                for(let i = 0; i < aoes.length; i++){
+                    if(distanceCalc(aoes[i].x, aoes[i].y, character.x, character.y) - ml/character.width/2 < ml/1000 * aoes[i].r){
+                        damagePlayer(areass[i].damage, true);
+                        if(areass[i].damageconsume == true){
+                            aoeDestroy(i);
+                        }
+                    }
+                    for(let t = 0; t < enemies.length; t++){
+                        if(distanceCalc(aoes[i].x, aoes[i].y, enemies[t].x, enemies[t].y) - ml/enemies[t].width/2 < ml/1000 * aoes[i].r){
+                            if(ess[t].hp + areass[i].healing >= enemyStatBlock[ess[t].type].hp){
+                                ess[t].hp = enemyStatBlock[ess[t].type].hp;
+                                if(areass[i].healconsume == true){
+                                    aoeDestroy(i);
+                                }
+                            } else{
+                                ess[t].hp += areass[i].healing;
+                                if(areass[i].healconsume == true){
+                                    aoeDestroy(i);
+                                }
+                            }
+                        }
+                    }
+                }
+                for(let i = 0; i < bullets.length; i++){
+                    if(bss[i].damage == "Player"){
+                        bullets[i].x += bulletSpeed * ml/1000 * bss[i].xmom;
+                        bullets[i].y += bulletSpeed * ml/1000 * bss[i].ymom;
+                        let hit = false;
+                        for(let t = 0; t < enemies.length; t++){
+                            if(squareHitDetector(enemies[t].x, enemies[t].y, ml/enemies[t].width/2, ml/enemies[t].height/2, bullets[i].x, bullets[i].y, ml/bullets[i].width/2, ml/bullets[i].height/2) == true){
+                                ess[t].hp += -playerDamage;
+                                ess[t].healthBarCounter = 100;
+                                killChecker(t);
+                                bulletDestroy(i);
+                                hit = true;
+                                break;
+                            }
+                        }
+                        if(hit == true){
+                            continue;
+                        }
+                        sideHandler(i, bulletSize);
+                    } else {
+                        bullets[i].x += bss[i].speed * ml/1000 * bss[i].xmom;
+                        bullets[i].y += bss[i].speed * ml/1000 * bss[i].ymom;
+                        if(squareHitDetector(character.x, character.y, ml/character.width/2, ml/character.height/2, bullets[i].x, bullets[i].y, ml/bullets[i].width/2, ml/bullets[i].height/2) == true && invulnerable == false){
+                            damagePlayer(bss[i].damage, false);
+                            bulletDestroy(i);
+                            continue;
+                        }
+                        sideHandler(i, bullets[i].width);
+                    }
+                }
+                for(let i = 0; i < lasers.length; i++){
+                    let offsetPosX = lasers[i].startx;
+                    let offsetPosY = lasers[i].starty;
+                    let enemyOfOrigin = enemyStatBlock[ess[enemyTrackerID.indexOf(lss[i].eoti)].type];
+                    switch(lss[i].type){
+                        case "Dynamic":
+                            offsetPosY = enemies[enemyTrackerID.indexOf(lss[i].eoti)].y;
+                            offsetPosX = enemies[enemyTrackerID.indexOf(lss[i].eoti)].x;
+                            lasers[i].startx = offsetPosX;
+                            lasers[i].starty = offsetPosY;
+                            break;
+                        case "Center":
+                            offsetPosY = c.height/2;
+                            offsetPosX = c.width/2;
+                            lasers[i].startx = offsetPosX;
+                            lasers[i].starty = offsetPosY;
+                            break;
+                    }
+                    lasers[i].endx = lss[i].xdirect * lss[i].longness * ml/1000 + offsetPosX;
+                    lasers[i].endy = lss[i].ydirect * lss[i].longness * ml/1000 + offsetPosY;
+                    switch(lss[i].changetype){
+                        case "Sweep":
+                            if(lss[i].angle * 180/Math.PI >= lss[i].originalAngle * 180/Math.PI + enemyOfOrigin.sweepPrecision * 2){
+                                laserDestroy(i);   
+                                continue; 
+                            }
+                        case "Spin":
+                            lss[i].angle += 0.01 * enemyOfOrigin.laserSpeed;
+                            lss[i].xdirect = Math.sin(lss[i].angle);
+                            lss[i].ydirect = Math.cos(lss[i].angle);
+                            break;
+                    }
+                }
+                waveDelayCounter++;
+            }
+            render();
+        }, 20)
+        function squareHitDetector(x1, y1, w1, h1, x2, y2, w2, h2){
+            return x1 + w1 > x2 - w2 && x1 - w1 < x2 + w2 & y1 + h1 > y2 - w2 && y1 - h1 < y2 + w2;
+        }
+        function lineHitDetector(x1, x2, y1, y2, xdirect, ydirect, size, targetx, targety, targetsize){
+            let expectedYMulti = Math.abs(targetx - x1)/Math.abs(xdirect) * ydirect;
+            let maxSide = Math.max(x1, x2);
+            let minSide = Math.min(x1, x2);
+            let maxSide2 = Math.max(y1, y2);
+            let minSide2 = Math.min(y1, y2);
+            return targetx + targetsize + size * Math.abs(ydirect) > minSide && targetx - targetsize - size/2 * Math.abs(ydirect) < maxSide && targety + targetsize + size * Math.abs(xdirect) > minSide2 && targety - targetsize - size * Math.abs(xdirect) < maxSide2 && targety + targetsize + size * Math.abs(xdirect) > expectedYMulti + y1 && targety - targetsize - size * Math.abs(xdirect) < expectedYMulti + y1;
+        }
+        function sideHandler(id, size){
+            if(bullProperties[id].looping == false){
+                if(bullets[id].x + ml/size/2 < 0 || bullets[id].x - ml/size/2 > c.width || bullets[id].y + ml/size/2 < 0 || bullets[id].y - ml/size/2 > c.height){
+                    bulletDestroy(id);
+                }
+            } else{
+                if(bullets[id].x - ml/size/2 > c.width){
+                    bullets[id].x = 0 + ml/size/2;
+                } else if(bullets[id].x + ml/size/2 < 0){
+                    bullets[id].x = c.width - ml/size/2;
+                }
+                if(bullets[id].y - ml/size/2 > c.height){
+                    bullets[id].y = 0 + ml/size/2;
+                } else if(bullets[id].y + ml/size/2 < 0){
+                    bullets[id].y = c.height - ml/size/2;
+                }
+           }
+        }
+        function damagePlayer(damage, dot){
+            health += -damage;
+            if(health > 0){
+                if(dot == false){
+                    iframeCycler();
+                }
+            } else{
+                gameOver = true;
+                health = 0;
+                window.clearInterval(gameRunner)
+                render();
+            }
+        }
+        function bulletDestroy(id){
+            bullets.splice(id, 1);
+            bss.splice(id, 1);
+            bullProperties.splice(id, 1);
+        }
+        function killChecker(id){
+            if(ess[id].hp <= 0){
+                xp += enemyStatBlock[ess[id].type].reward;
+                totalXP += enemyStatBlock[ess[id].type].reward;
+                if(xp >= requiredXP){
+                    levelUp();
+                }
+                let markedLasers = [];
+                for(let i = 0; i < lasers.length; i++){
+                    if(lss[i].eoti == enemyTrackerID[id]){
+                        markedLasers.push(laserTrackerID[i]);
+                    }
+                }
+                for(let i = 0; i < markedLasers.length; i++){
+                    laserDestroy(laserTrackerID.indexOf(markedLasers[i]));
+                }
+                enemies.splice(id, 1);
+                ess.splice(id, 1);
+                enemyTrackerID.splice(id, 1);
+                enemyCount--;
+                kills++;
+                if(enemyCount == 0 && spawnFinish == true){
+                    if(demonstrationMode == true){
+                        damagePlayer(maxHealth);
+                        win = true;
+                    } else{
+                        waveActive = false;
+                        enemyWaveCounter = 0;
+                        bullets.length = 0;
+                        bss.length = 0;
+                        bullProperties.length = 0;
+                        director();
+                    }
+                }
+            }
+        }
+        function levelUp(){
+            let overflow = xp - requiredXP;
+            requiredXP = requiredXP * 1.2;
+            xp = overflow;
+            skillPoints++;
+            level++;
+            if(xp >= requiredXP){
+                levelUp();
+            }
+        }
+        if(xp > requiredXP){
+            levelUp();
+        }
+        async function ai(target, targetid){
+            let mover = new aimer(target.x, target.y, character.x, character.y);
+            let distance = distanceCalc(target.x, target.y, character.x, character.y);
+            let random = Math.random();
+            const type = enemyStatBlock[ess[targetid].type];
+            let moverai = type.moveai;
+            let shooterai = type.shotai;
+            let skillai = type.skill;
+            if(ess[targetid].skillactive.length == 0 || type.skillMove == true){
+                switch(moverai){
+                    case "Converge":
+                        target.x += mover.x * type.speed * globalEnemySpeedMulti * ml/1000;
+                        target.y += mover.y * type.speed * globalEnemySpeedMulti * ml/1000;
+                        break;
+                    case "Follow":
+                        if(distance > ml * type.followDistance + type.speed * ml/1000){
+                            target.x += mover.x * type.speed * globalEnemySpeedMulti * ml/1000;
+                            target.y += mover.y * type.speed * globalEnemySpeedMulti * ml/1000;
+                        } else if (distance < ml * type.followDistance - type.speed * ml/1000){
+                            target.x += -mover.x * type.speed * globalEnemySpeedMulti * ml/1000;
+                            target.y += -mover.y * type.speed * globalEnemySpeedMulti * ml/1000;
+                        }
+                        break;
+                }
+            }
+            if(ess[targetid].shotavailable == true){
+                enemyShotCycler(targetid);
+                switch(shooterai){
+                    case "Basic":
+                        bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
+                        bss.push(new bulletSideStats(mover.x, mover.y, type.damage * type.projectileDamage, type.projectileSpeed));
+                        bullProperties.push(type.projectileProperties);
+                        break;
+                    case "Random":
+                        bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
+                        let quadrant = randomInt(1, 4);
+                        let randomNum = Math.random();
+                        switch(quadrant){
+                            case 1:
+                                bss.push(new bulletSideStats(randomNum, 1 - randomNum, type.damage * type.projectileDamage, type.projectileSpeed));
+                                break;
+                            case 2:
+                                bss.push(new bulletSideStats(-randomNum, 1 - randomNum, type.damage * type.projectileDamage, type.projectileSpeed));
+                                break;
+                            case 3:
+                                bss.push(new bulletSideStats(randomNum, -(1 - randomNum), type.damage * type.projectileDamage, type.projectileSpeed));
+                                break;
+                            case 4:
+                                bss.push(new bulletSideStats(-randomNum, -(1 - randomNum), type.damage * type.projectileDamage, type.projectileSpeed));
+                                break;
+                        }
+                        bullProperties.push(type.projectileProperties);
+                        break;
+                    case "Predictive":
+                        if(playerXDirect == 0 && playerYDirect == 0){
+                            bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
+                            bss.push(new bulletSideStats(mover.x, mover.y, type.damage * type.projectileDamage, type.projectileSpeed));
+                            bullProperties.push(type.projectileProperties);
+                        } else{
+                            let closeLevel = distance;
+                            let targetPosX = character.x;
+                            let targetPosY = character.y;
+                            for(let i = 0; i < 250; i++){
+                                let predictedX = character.x + playerXDirect * ml/1000 * playerSpeed * i;
+                                let predictedY = character.y + playerYDirect * ml/1000 * playerSpeed * i;
+                                let predictAimer = new aimer(target.x, target.y, predictedX, predictedY);
+                                if(predictedX < -ml/300 || predictedX > c.width + ml/300 || predictedY < -ml/300 || predictedY > c.height + ml/300){
+                                    break;
+                                }
+                                let adjustedBulletX = target.x + predictAimer.x * ml/1000 * type.projectileSpeed * i;
+                                let adjustedBulletY = target.y + predictAimer.y * ml/1000 * type.projectileSpeed * i;
+                                let predictedCloseness = distanceCalc(adjustedBulletX, adjustedBulletY, predictedX, predictedY);
+                                if(predictedCloseness < closeLevel){
+                                    closeLevel = predictedCloseness;
+                                    targetPosX = predictedX;
+                                    targetPosY = predictedY;
+                                }
+                                if(predictedCloseness < ml/1000 * type.projectileSpeed){
+                                    break;
+                                }
+                                // cx.strokeStyle = "red";
+                                // cx.beginPath();
+                                // cx.moveTo(target.x, target.y);
+                                // cx.lineTo(adjustedBulletX, adjustedBulletY);
+                                // cx.stroke();
+                                // cx.strokeStyle = "blue";
+                                // cx.beginPath();
+                                // cx.moveTo(character.x, character.y);
+                                // cx.lineTo(predictedX, predictedY);
+                                // cx.stroke();
+                                // await sleep(20);
+                            }
+                            let finalAimer = new aimer(target.x, target.y, targetPosX, targetPosY);
+                            bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
+                            bss.push(new bulletSideStats(finalAimer.x, finalAimer.y, type.damage * type.projectileDamage, type.projectileSpeed));
+                            bullProperties.push(type.projectileProperties);
+                        }
+                        break;
+                
+                }    
+            }
+            if(ess[targetid].skillavailable == true){
+                enemySkillCycler(targetid);
+                let tempXOrigin;
+                let tempYOrigin;
+                skillIDCounter++;
+                ess[targetid].skillactive.push(true);
+                switch(type.skillOrigin){
+                    case "Dynamic":
+                    case "Static":
+                        tempXOrigin = target.x;
+                        tempYOrigin = target.y;
+                        break;
+                    case "Center":
+                        tempXOrigin = c.width/2;
+                        tempYOrigin = c.height/2;
+                        break
+                    case "SetRandom":
+                        tempXOrigin = ess[targetid].randomPosX * c.width;
+                        tempYOrigin = ess[targetid].randomPosY * c.height;
+                        break;
+                    case "TrueRandom":
+                        tempXOrigin = Math.random() * c.width;
+                        tempYOrigin = Math.random() * c.height;
+                        break;
+                        }
+                switch(skillai){
+                    case "Laser":
+                        let tempAngle = 0;
+                        let tempLaserAimer = new aimer(tempXOrigin, tempYOrigin, character.x, character.y);
+                        switch(type.laserType){
+                            case "Sweep":
+                                tempAngle = Math.atan2(tempLaserAimer.x, tempLaserAimer.y) - type.sweepPrecision/180 * Math.PI;
+                                break;
+                            case "Predict":
+                                let TempPredictAimer = new aimer(tempXOrigin, tempYOrigin, character.x + ml/1000 * playerXDirect * playerSpeed * type.predictPrecision/20, character.y + ml/1000 * playerYDirect * playerSpeed * type.predictPrecision/20);
+                                tempAngle = Math.atan2(TempPredictAimer.x, TempPredictAimer.y);
+                                break;
+                            case "Random":
+                                tempAngle = randomInt(0, 360)/180 * Math.PI;
+                                break;
+                        }
+                        lss.push(new laserSideStats(type.skillDuration, type.damage, type.laserLength, enemyTrackerID[targetid], Math.sin(tempAngle), Math.cos(tempAngle), type.skillOrigin, type.laserType, tempAngle));
+                        lasers.push(new linecomponent(tempXOrigin, tempYOrigin, Math.sin(tempAngle) * type.laserLength * ml/1000, Math.cos(tempAngle) * type.laserLength * ml/1000, type.laserSize, type.effectsColor, type.effectsGlowColor));
+                        laserTrackerID.push(skillIDCounter);
+                        if(type.laserType != "Sweep"){
+                            laserCycler(lasers.length - 1);
+                        }
+                        break;
+                    case "AOE":
+                        aoes.push(new circlecomponent(tempXOrigin, tempYOrigin, type.aoeSize, type.aoeWidth, type.effectsColor, type.effectsGlowColor));
+                        areass.push(new areasSideStats(type.skillDuration, type.damage * type.aoeDamage, type.aoeHealing, enemyTrackerID[targetid], type.damageConsume, type.healConsume));
+                        aoeTrackerID.push(skillIDCounter);
+                        aoeCycler(aoes.length - 1);
+                        break;
+                }
+            }
+            if(target.x < 0){
+                target.x = 0;
+            } else if (target.x > c.width){
+                target.x = c.width;
+            }
+            if(target.y < 0){
+                target.y = 0;
+            } else if (target.y > c.height){
+                target.y = c.height;
+            }
+        }
+        function render(){
+            cx.globalAlpha = standardAlpha;
+            cx.clearRect(0, 0, c.width, c.height);
+            cx.shadowBlur = 8;
+            for(let i = 0; i < bullets.length; i++){
+                if(bss[i].damage == "Player"){
+                    cx.globalAlpha = standardAlpha * 0.4;
+                    bullets[i].update();
+                }
+            }
+            cx.globalAlpha = standardAlpha;
+            for(let i = 0; i < aoes.length; i++){
+                aoes[i].update();
+            }
+            for(let i = 0; i < enemies.length; i++){
+                let type = enemyStatBlock[ess[i].type];
+                enemies[i].update();
+                if(ess[i].healthBarCounter > 0){
+                    if(ess[i].healthBarCounter > 50){
+                        cx.globalAlpha = standardAlpha;
+                    } else{
+                        cx.globalAlpha = standardAlpha * ess[i].healthBarCounter/50;
+                    }
+                    cx.strokeStyle = "gray";
+                    cx.shadowColor = "gray";
+                    cx.lineWidth = ml/1000;
+                    cx.strokeRect(enemies[i].x - ml/enemies[i].width/2 * 0.85, enemies[i].y - ml/enemies[i].height/2 * 1.5, ml/enemies[i].width * 0.8, ml/enemies[i].height/10);
+                    cx.fillStyle = type.effectsColor;
+                    cx.shadowColor = type.effectsGlowColor;
+                    cx.fillRect(enemies[i].x - ml/enemies[i].width/2 * 0.85, enemies[i].y - ml/enemies[i].height/2 * 1.5, ml/enemies[i].width * 0.8 * ess[i].hp/type.hp, ml/enemies[i].height/10);
+                    cx.globalAlpha = standardAlpha;
+                }
+                if(ess[i].skillactive.length != 0){
+                    cx.strokeStyle = type.effectsColor;
+                    cx.shadowColor = type.effectsGlowColor;
+                    cx.lineWidth = ml/400;
+                    cx.beginPath();
+                    cx.arc(enemies[i].x, enemies[i].y, ml/enemies[i].width/3, 0, Math.PI * 2);
+                    cx.stroke();
+                }
+            }
+            for(let i = 0; i < lasers.length; i++){
+                lasers[i].update();
+            }
+            for(let i = 0; i < bullets.length; i++){
+                if(bss[i].damage != "Player"){
+                    bullets[i].update();
+                }
+            }
+            if(invulnerable == true){
+                cx.globalAlpha = standardAlpha * 0.1;
+            }
+            character.update();
+            cx.globalAlpha = standardAlpha;
+            cx.textAlign = "center";
+            if(waveActive == false){
+                cx.fillStyle = "darkslateblue";
+                cx.shadowColor = "cyan";
+                cx.fillRect(0, c.height * 0.005, c.width/waveDelay/50 * waveDelayCounter, ml/500);
+                cx.strokeStyle = "white";
+                cx.font = ml/20 + "px Arial";
+                cx.lineWidth = ml/400;
+                cx.strokeText("Press Z to Procede", c.width * 0.8, c.height * 0.1);
+                cx.strokeText("Press E for Inventory", c.width * 0.8, c.height * 0.2);
+            } else{
+                cx.fillStyle = "darkred";
+                cx.shadowColor = "red";
+                let totalCredits = baseCredits + (wave - 1) * directorCreditMulti;
+                cx.fillRect(0, c.height * 0.005, c.width/totalCredits * (totalCredits - directorCredits), ml/500);
+            }
+            cx.globalAlpha = standardAlpha;
+            cx.strokeStyle = "red";
+            cx.shadowColor = "pink";
+            cx.font = ml/20 + "px Arial";
+            cx.lineWidth = ml/1200;
+            cx.strokeText(parseFloat(health.toFixed(2)) + "/" + maxHealth + " HP", c.width/2, c.height * 0.07);
+            cx.strokeStyle = "white";
+            cx.font = ml/40 + "px Arial";
+            cx.strokeText('Wave: ' + wave, c.width/2, c.height * 0.12)
+            cx.shadowColor = "cyan";
+            cx.globalAlpha = 1;
+            cx.strokeRect(0, c.height * 0.995, c.width/requiredXP * xp, ml/500);
+            if(skillPoints != 0){
+                if(waveActive == true){
+                    cx.globalAlpha = standardAlpha * 0.1;
+                }
+                cx.strokeText(skillPoints + " Unspent Point(s) Remaining", c.width/2, c.height * 0.95);
+                cx.globalAlpha = standardAlpha;
+            }
+            if(pause == true){
+                cx.globalAlpha = 1;
+                cx.shadowColor = "blue";
+                cx.font = ml/30 + "px Arial";
+                cx.lineWidth = ml/600;
+                cx.strokeText("Level: " + level, c.width/2, c.height * 0.06);
+                cx.font = ml/50 + "px Arial";
+                cx.lineWidth = ml/1000;
+                cx.strokeText(rerolls + " Reroll(s) Left", c.width/2, c.height * 0.1);
+                cx.fillStyle = "black";
+                cx.shadowColor = "white";
+                cx.fillRect(c.width * 0.7, c.height * 0.3, c.width * 0.25, c.height * 0.65);
+                cx.lineWidth = ml/2000;
+                cx.strokeStyle = "darkslateblue";
+                cx.shadowColor = "cyan";
+                cx.strokeRect(c.width * 0.7, c.height * 0.3, c.width * 0.25, c.height * 0.65);
+                cx.shadowColor = "blue";
+                cx.strokeStyle = "cyan";
+                cx.lineWidth = ml/1000;
+                cx.strokeRect(c.width * 0.45 - ml * 0.1, c.height * 0.3, ml * 0.1, ml * 0.1);
+                cx.strokeRect(c.width * 0.55, c.height * 0.3, ml * 0.1, ml * 0.1);
+                cx.strokeRect(c.width * 0.45 - ml * 0.1, c.height * 0.6, ml * 0.1, ml * 0.1);
+                cx.strokeRect(c.width * 0.55, c.height * 0.6, ml * 0.1, ml * 0.1);
+            }
+            if(gameOver == true){
+                cx.shadowColor = "cyan";
+                cx.font = ml/10 + "px Arial";
+                cx.lineWidth = ml/400;
+                if(win == true){
+                    cx.strokeText('End of Demo, Again', c.width/2, c.height * 0.3)
+                } else{
+                    cx.strokeText('Game Over', c.width/2, c.height * 0.3);
+                }
+                cx.font = ml/30 + 'px Arial';
+                cx.lineWidth = ml/1200;
+                cx.strokeText('Enemies Killed: ' + kills, c.width/2, c.height * 0.4)
+                cx.strokeText('Total XP Gained: ' + parseFloat(totalXP.toFixed(1)), c.width/2, c.height * 0.48)
+                cx.strokeText('Level Achieved: ' + level, c.width/2, c.height * 0.56)
+                cx.shadowColor = "yellow";
+                cx.strokeText('Press R to Restart', c.width/2, c.height * 0.64)
+            }
+        }
+        function squarecomponent(width, height, x, y, color, glowcolor){
+            this.width = width;
+            this.height = height;
+            this.x = x;
+            this.y = y;
+            this.glowcolor = glowcolor;
+            this.color = color;
+            this.update = function(){
+                cx.fillStyle = this.color;
+                cx.shadowColor = this.glowcolor;
+                cx.fillRect(this.x - ml/this.width/2, this.y - ml/this.height/2, ml/this.width, ml/this.height);
+            }
+        }
+        function linecomponent(startx, starty, endx, endy, size, color, glowcolor){
+            this.size = size;
+            this.startx = startx;
+            this.starty = starty;
+            this.endx = endx;
+            this.endy = endy;
+            this.color = color;
+            this.glowcolor = glowcolor;
+            this.update = function(){
+                cx.strokeStyle = this.color;
+                cx.shadowColor = this.glowcolor;
+                cx.lineWidth = this.size * ml/1000;
+                cx.beginPath();
+                cx.moveTo(this.startx, this.starty);
+                cx.lineTo(this.endx, this.endy);
+                cx.stroke();
+            }
+        }
+        function circlecomponent(x, y, radius, width, color, glowcolor){
+            this.x = x;
+            this.y = y;
+            this.r = radius;
+            this.width = width;
+            this.color = color;
+            this.glowcolor = glowcolor;
+            this.update = function(){
+                cx.strokeStyle = this.color;
+                cx.shadowColor = this.glowcolor;
+                cx.lineWidth = this.width * ml/1000;
+                cx.beginPath();
+                cx.arc(this.x, this.y, this.r * ml/1000, 0, Math.PI * 2);
+                cx.stroke();
+            }
+        }
+        function sleep(ms){
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        async function shotCycler(){
+            shotAvailable = false;
+            await sleep(shotDelay);
+            shotAvailable = true;
+        }
+        shotCycler();
+        async function iframeCycler(){
+            invulnerable = true;
+            await sleep(iframes);
+            invulnerable = false;
+        }
+        async function enemyShotCycler(enemyID){
+            ess[enemyID].shotavailable = false;
+            let trackerID = enemyTrackerID[enemyID];
+            await sleep(enemyStatBlock[ess[enemyID].type].shotDelay);
+            if(enemyTrackerID.indexOf(trackerID) !== -1){
+                ess[enemyTrackerID.indexOf(trackerID)].shotavailable = true;
+            }
+        }
+        async function enemySkillCycler(enemyID){
+            ess[enemyID].skillavailable = false;
+            let trackerID = enemyTrackerID[enemyID];
+            await sleep(enemyStatBlock[ess[enemyID].type].skillDelay);
+            if(enemyTrackerID.indexOf(trackerID) !== -1){
+                ess[enemyTrackerID.indexOf(trackerID)].skillavailable = true;
+            }
+        }
+        async function laserCycler(laserID){
+            let trackerID = laserTrackerID[laserID];
+            await sleep(lss[laserID].duration);
+            if(laserTrackerID.indexOf(trackerID) !== -1){
+                laserDestroy(laserTrackerID.indexOf(trackerID));
+            }
+        }
+        async function aoeCycler(aoeID){
+            let trackerID = aoeTrackerID[aoeID];
+            await sleep(areass[aoeID].duration);
+            if(aoeTrackerID.indexOf(trackerID) !== -1){
+                aoeDestroy(aoeTrackerID.indexOf(trackerID))
+            }
+        }
+        function aoeDestroy(id){
+            ess[enemyTrackerID.indexOf(areass[id].eoti)].skillactive.splice(0, 1);
+            aoes.splice(id, 1);
+            areass.splice(id, 1);
+            aoeTrackerID.splice(id, 1);
+        }
+        function laserDestroy(id){
+            ess[enemyTrackerID.indexOf(lss[id].eoti)].skillactive.splice(0, 1);
+            lasers.splice(id, 1);
+            lss.splice(id, 1);
+            laserTrackerID.splice(id, 1);
+        }
+        function aimer(originX, originY, targetX, targetY){
+            let totalDistance = distanceCalc(originX, originY, targetX, targetY);
+            this.x = (targetX - originX)/totalDistance;
+            this.y = (targetY - originY)/totalDistance;
+        }
+        function distanceCalc(originX, originY, targetX, targetY){
+            return Math.abs(targetX - originX) + Math.abs(targetY - originY);
+        }
+        function enemySpawner(enemyID){
+            let enemyStats = enemyStatBlock[enemyID];
+            let enemyPosSwapper = randomInt(0, 3);
+            if(enemyPosSwapper == 0){
+                enemies.push(new squarecomponent(enemyStats.size, enemyStats.size, 0, Math.random() * c.height, enemyStats.color, enemyStats.glowcolor));
+            } else if (enemyPosSwapper == 1){
+                enemies.push(new squarecomponent(enemyStats.size, enemyStats.size, c.width, Math.random() * c.height, enemyStats.color, enemyStats.glowcolor));
+            } else if (enemyPosSwapper == 2){
+                enemies.push(new squarecomponent(enemyStats.size, enemyStats.size, Math.random() * c.width, 0, enemyStats.color, enemyStats.glowcolor));
+            } else{
+                enemies.push(new squarecomponent(enemyStats.size, enemyStats.size, Math.random() * c.width, c.height, enemyStats.color, enemyStats.glowcolor));
+            }
+            ess.push(new enemySideStats(enemyID, false, enemyStats.hp, false));
+            enemyTrackerID.push(enemyWaveCounter);
+            if(enemyStats.shotai !== undefined){
+                enemyShotCycler(enemies.length - 1);
+            }
+            if(enemyStats.skill !== undefined){
+                enemySkillCycler(enemies.length - 1);
+            }
+            enemyWaveCounter++;
+            enemyCount++;
+        }
+        function randomInt(min, max){
+            return Math.round(Math.random() * (max - min) + min);
+        }
+        async function director(){
+            if(waveActive == true)
+            {   let choice = true;
+                while(directorCredits >= minCost){
+                    if(choice == true){
+                        await sleep(randomInt(1500, 3000)/directorAggression);
+                    }
+                    choice = false;
+                    let enemyChooser = randomInt(1, (totalWeight - 1));
+                    let weightTracker = 0;
+                    for(let i = 0; i < enemyStatBlock.length; i++){
+                        if(enemyChooser > weightTracker && enemyChooser <= weightTracker + enemyStatBlock[i].weight && wave >= enemyStatBlock[i].minWave && directorCredits >= enemyStatBlock[i].cost && enemyStatBlock[i].maxWave > wave){
+                            directorCredits += -enemyStatBlock[i].cost;
+                            enemySpawner(i);
+                            choice = true;
+                            break;
+                        }
+                        weightTracker += enemyStatBlock[i].weight;
+                    }
+                }
+                directorCredits = 0;
+                spawnFinish = true;
+            } else{
+                spawnFinish = false;
+                waveDelayCounter = 0;
+                while(waveDelayCounter < waveDelay * 50){
+                    await sleep(100);
+                }
+                waveActive = true;
+                wave++;
+                minCostCalc();
+                if(wave % 3 == 0){
+                    rerolls++;
+                }
+                directorAggression = 1 + (wave - 1) * 0.1;
+                directorCredits = baseCredits + (wave - 1) * directorCreditMulti;
+                director();
+            }
+        }
+        director();
+    </script>
+</html>
