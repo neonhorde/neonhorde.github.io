@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>Neon Horde: Rebirth</title>
-        <link rel = "icon" href = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRYcCZerv8-lawQztVUjK-v2nyvN1OUUxKmczDtY7DyQLV3dLTrxZgLQ6bpzH65JUC25Ps:https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Neon_discharge_tube.jpg/1200px-Neon_discharge_tube.jpg&usqp=CAU">
+        <link rel = "icon" href = "https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Neon_discharge_tube.jpg/220px-Neon_discharge_tube.jpg">
     </head>
     <body style = "margin: 0 !important; padding: 0 !important">
         <canvas style = "background-color: black; display: block;" id = "gamescreen"></canvas>
@@ -58,6 +58,8 @@
         let minCost;
         let demonstrationMode = true;
         let win = false;
+        let spinaim = false;
+        let spinangle = 0;
         const enemyStatBlock = [];
         const bullets = [];
         const bss = [];
@@ -151,6 +153,11 @@
             this.randomPosX = Math.random();
             this.randomPosY = Math.random();
             this.healthBarCounter = 0;
+            this.randomChooser = randomInt(1, 2);
+            this.dashTimeRemaining = 0;
+            this.dashActive = false;
+            this.dashX = 0;
+            this.dashY = 0;
         }
         function laserSideStats(duration, damage, length, enemyorigintrackerid, xdirect, ydirect, type, changetype, angle){
             this.duration = duration;
@@ -186,6 +193,7 @@
                 //contact == true: survivecontact
                 //lasertype == predict: predictprecision (how far in the future, in ms, that the laser will aim)
                 //skill == aoe: aoesize, aoedamage (multiplier), aoehealing (flat), damageconsume, healconsume
+                //dash == dashlength, dashtime
                 switch(type){
                     case 0:
                     case "Basic":
@@ -308,17 +316,17 @@
                     case "Tester":
                         this.color = "black";
                         this.glowcolor = "yellow";
-                        this.effectsColor = "goldenrod";
-                        this.effectsGlowColor = "orange";
+                        this.effectsColor = "white";
+                        this.effectsGlowColor = "white";
                         this.moveai = "Converge";
                         this.shotai = undefined;
-                        this.skill = "AOE";
+                        this.skill = "Laser";
                         this.contact = true;
                         this.surviveContact = true;
-                        this.size = 30;
-                        this.speed = 6;
-                        this.damage = 5;
-                        this.hp = 10000;
+                        this.size = 50;
+                        this.speed = 4;
+                        this.damage = 2;
+                        this.hp = 5000;
                         this.minWave = 1;
                         this.maxWave = Infinity;
                         this.cost = directorCredits;
@@ -326,27 +334,29 @@
                         this.weight = Infinity;
                         this.shotDelay = 20;
                         this.projectileSize = 75;
-                        this.projectileSpeed = 5;
+                        this.projectileSpeed = 20;
                         this.followDistance = 0.5;
                         this.projectileProperties = new bulletProperties(false);
                         this.projectileDamage = 2;
-                        this.skillDelay = 200;
-                        this.skillDuration = 2000;
+                        this.skillDelay = 20;
+                        this.skillDuration = 500;
                         this.skillMove = true;
                         this.laserSpeed = 5;
-                        this.laserLength = 150;
+                        this.laserLength = 1500;
                         this.laserSize = 1;
                         this.laserDamage = 0.01;
                         this.skillOrigin = "TrueRandom";
-                        this.laserType = "Spin";
-                        this.predictPrecision = 1000;
+                        this.laserType = "Predict";
+                        this.predictPrecision = 500;
                         this.sweepPrecision = 45;
-                        this.aoeSize = 45;
+                        this.aoeSize = 100;
                         this.aoeWidth = 1;
                         this.aoeDamage = 0.05;
-                        this.aoeHealing = 500;
+                        this.aoeHealing = 10000;
                         this.damageConsume = false;
                         this.healConsume = true;
+                        this.dashLength = 100;
+                        this.dashTime = 10;
                         break;
                     default:
                         preGameEnemyCycler = true;
@@ -387,6 +397,8 @@
             let tempLaserStartX = [];
             let tempLaserEndX = [];
             let tempLaserEndY = [];
+            let tempAOEX = [];
+            let tempAOEY = [];
             for(let i = 0; i < enemies.length; i++){
                 tempEnemyX.push(c.width/enemies[i].x);
                 tempEnemyY.push(c.height/enemies[i].y);
@@ -400,6 +412,10 @@
                 tempLaserStartY.push(c.height/lasers[i].starty);
                 tempLaserEndX.push(c.width/lasers[i].endx);
                 tempLaserEndY.push(c.height/lasers[i].endy);
+            }
+            for(let i = 0; i < aoes.length; i++){
+                tempAOEX.push(c.width/aoes[i].x);
+                tempAOEY.push(c.height/aoes[i].y);
             }
             c.width = window.innerWidth;
             c.height = window.innerHeight;
@@ -417,6 +433,10 @@
                 lasers[i].endx = c.width/tempLaserEndX[i];
                 lasers[i].starty = c.height/tempLaserStartY[i];
                 lasers[i].endy = c.height/tempLaserEndY[i];
+            }
+            for(let i = 0; i < aoes.length; i++){
+                aoes[i].x = c.width/tempAOEX[i];
+                aoes[i].y = c.height/tempAOEY[i];
             }
             character.x = c.width/tempX;
             character.y = c.height/tempY;
@@ -445,9 +465,23 @@
                 }
                 if(shotAvailable == true && shooting == true || shotAvailable == true && autofire == true){
                     shotCycler();
-                    let tempAimer = new aimer(character.x, character.y, mouseX, mouseY);
+                    if(spinaim == false){
+                        let tempAimer = new aimer(character.x, character.y, mouseX, mouseY);
+                        bss.push(new bulletSideStats(tempAimer.x, tempAimer.y, "Player", "Player"));
+                    } else{
+                        bss.push(new bulletSideStats(Math.sin(spinangle), Math.cos(spinangle), "Player", "Player"));
+                        bss.push(new bulletSideStats(-Math.sin(spinangle), -Math.cos(spinangle), "Player", "Player"));
+                        bullets.push(new squarecomponent(bulletSize, bulletSize, character.x, character.y, "white", "cyan"));
+                        bullProperties.push(new bulletProperties(looperBullets));
+                        bss.push(new bulletSideStats(Math.sin(spinangle), -Math.cos(spinangle), "Player", "Player"));
+                        bullets.push(new squarecomponent(bulletSize, bulletSize, character.x, character.y, "white", "cyan"));
+                        bullProperties.push(new bulletProperties(looperBullets));
+                        bss.push(new bulletSideStats(-Math.sin(spinangle), Math.cos(spinangle), "Player", "Player"));
+                        bullets.push(new squarecomponent(bulletSize, bulletSize, character.x, character.y, "white", "cyan"));
+                        bullProperties.push(new bulletProperties(looperBullets));
+                        spinangle += 0.1;
+                    }
                     bullets.push(new squarecomponent(bulletSize, bulletSize, character.x, character.y, "white", "cyan"));
-                    bss.push(new bulletSideStats(tempAimer.x, tempAimer.y, "Player", "Player"));
                     bullProperties.push(new bulletProperties(looperBullets));
                 }
                 for(let i = 0; i < lasers.length; i++){
@@ -455,28 +489,71 @@
                         let statCaller = enemyStatBlock[ess[enemyTrackerID.indexOf(lss[i].eoti)].type];
                         damagePlayer(statCaller.damage * statCaller.laserDamage, true);
                     }
+                    let offsetPosX = lasers[i].startx;
+                    let offsetPosY = lasers[i].starty;
+                    let enemyOfOrigin = enemyStatBlock[ess[enemyTrackerID.indexOf(lss[i].eoti)].type];
+                    switch(lss[i].type){
+                        case "Dynamic":
+                            offsetPosY = enemies[enemyTrackerID.indexOf(lss[i].eoti)].y;
+                            offsetPosX = enemies[enemyTrackerID.indexOf(lss[i].eoti)].x;
+                            lasers[i].startx = offsetPosX;
+                            lasers[i].starty = offsetPosY;
+                            break;
+                        case "Center":
+                            offsetPosY = c.height/2;
+                            offsetPosX = c.width/2;
+                            lasers[i].startx = offsetPosX;
+                            lasers[i].starty = offsetPosY;
+                            break;
+                    }
+                    lasers[i].endx = lss[i].xdirect * lss[i].longness * ml/1000 + offsetPosX;
+                    lasers[i].endy = lss[i].ydirect * lss[i].longness * ml/1000 + offsetPosY;
+                    switch(lss[i].changetype){
+                        case "Sweep":
+                            if(lss[i].angle * 180/Math.PI >= lss[i].originalAngle * 180/Math.PI + enemyOfOrigin.sweepPrecision * 2){
+                                laserDestroy(i);   
+                                continue; 
+                            }
+                        case "Spin":
+                            lss[i].angle += 0.01 * enemyOfOrigin.laserSpeed;
+                            lss[i].xdirect = Math.sin(lss[i].angle);
+                            lss[i].ydirect = Math.cos(lss[i].angle);
+                            break;
+                    }
                 }
-                for(let i = 0; i < aoes.length; i++){
+                aoerunner: for(let i = 0; i < aoes.length; i++){
                     if(distanceCalc(aoes[i].x, aoes[i].y, character.x, character.y) - ml/character.width/2 < ml/1000 * aoes[i].r){
                         damagePlayer(areass[i].damage, true);
                         if(areass[i].damageconsume == true){
                             aoeDestroy(i);
+                            continue aoerunner
                         }
                     }
                     for(let t = 0; t < enemies.length; t++){
-                        if(distanceCalc(aoes[i].x, aoes[i].y, enemies[t].x, enemies[t].y) - ml/enemies[t].width/2 < ml/1000 * aoes[i].r){
+                        if(distanceCalc(aoes[i].x, aoes[i].y, enemies[t].x, enemies[t].y) - ml/enemies[t].width/2 < ml/1000 * aoes[i].r && ess[t].hp != enemyStatBlock[ess[t].type].hp){
                             if(ess[t].hp + areass[i].healing >= enemyStatBlock[ess[t].type].hp){
                                 ess[t].hp = enemyStatBlock[ess[t].type].hp;
+                                ess[t].healthBarCounter = 110;
                                 if(areass[i].healconsume == true){
                                     aoeDestroy(i);
+                                    continue aoerunner
                                 }
                             } else{
                                 ess[t].hp += areass[i].healing;
+                                ess[t].healthBarCounter = 100;
                                 if(areass[i].healconsume == true){
                                     aoeDestroy(i);
+                                    continue aoerunner;
                                 }
                             }
                         }
+                    }
+                    let statCaller = enemyStatBlock[ess[enemyTrackerID.indexOf(areass[i].eoti)].type];
+                    switch(statCaller.skillOrigin){
+                        case "Dynamic":
+                            aoes[i].x = enemies[enemyTrackerID.indexOf(areass[i].eoti)].x;
+                            aoes[i].y = enemies[enemyTrackerID.indexOf(areass[i].eoti)].y;
+                            break;
                     }
                 }
                 for(let i = 0; i < bullets.length; i++){
@@ -510,37 +587,6 @@
                     }
                 }
                 for(let i = 0; i < lasers.length; i++){
-                    let offsetPosX = lasers[i].startx;
-                    let offsetPosY = lasers[i].starty;
-                    let enemyOfOrigin = enemyStatBlock[ess[enemyTrackerID.indexOf(lss[i].eoti)].type];
-                    switch(lss[i].type){
-                        case "Dynamic":
-                            offsetPosY = enemies[enemyTrackerID.indexOf(lss[i].eoti)].y;
-                            offsetPosX = enemies[enemyTrackerID.indexOf(lss[i].eoti)].x;
-                            lasers[i].startx = offsetPosX;
-                            lasers[i].starty = offsetPosY;
-                            break;
-                        case "Center":
-                            offsetPosY = c.height/2;
-                            offsetPosX = c.width/2;
-                            lasers[i].startx = offsetPosX;
-                            lasers[i].starty = offsetPosY;
-                            break;
-                    }
-                    lasers[i].endx = lss[i].xdirect * lss[i].longness * ml/1000 + offsetPosX;
-                    lasers[i].endy = lss[i].ydirect * lss[i].longness * ml/1000 + offsetPosY;
-                    switch(lss[i].changetype){
-                        case "Sweep":
-                            if(lss[i].angle * 180/Math.PI >= lss[i].originalAngle * 180/Math.PI + enemyOfOrigin.sweepPrecision * 2){
-                                laserDestroy(i);   
-                                continue; 
-                            }
-                        case "Spin":
-                            lss[i].angle += 0.01 * enemyOfOrigin.laserSpeed;
-                            lss[i].xdirect = Math.sin(lss[i].angle);
-                            lss[i].ydirect = Math.cos(lss[i].angle);
-                            break;
-                    }
                 }
                 waveDelayCounter++;
             }
@@ -601,13 +647,22 @@
                     levelUp();
                 }
                 let markedLasers = [];
+                let markedAoes = [];
                 for(let i = 0; i < lasers.length; i++){
                     if(lss[i].eoti == enemyTrackerID[id]){
                         markedLasers.push(laserTrackerID[i]);
                     }
                 }
+                for(let i = 0; i < aoes.length; i++){
+                    if(areass[i].eoti == enemyTrackerID[id]){
+                        markedAoes.push(aoeTrackerID[i]);
+                    }
+                }
                 for(let i = 0; i < markedLasers.length; i++){
                     laserDestroy(laserTrackerID.indexOf(markedLasers[i]));
+                }
+                for(let i = 0; i < markedAoes.length; i++){
+                    aoeDestroy(aoeTrackerID.indexOf(markedAoes[i]));
                 }
                 enemies.splice(id, 1);
                 ess.splice(id, 1);
@@ -663,6 +718,21 @@
                         } else if (distance < ml * type.followDistance - type.speed * ml/1000){
                             target.x += -mover.x * type.speed * globalEnemySpeedMulti * ml/1000;
                             target.y += -mover.y * type.speed * globalEnemySpeedMulti * ml/1000;
+                        }
+                        break;
+                    case "X-Y":
+                        if(ess[targetid].randomChooser == 1){
+                            if(target.x + type.speed * ml/1000 > character.x && target.x - type.speed * ml/1000 < character.x){
+                                target.y += Math.sign(mover.y) * type.speed * ml/1000;
+                            } else{
+                                target.x += Math.sign(mover.x) * type.speed * ml/1000;
+                            }
+                        } else{
+                            if(target.y + type.speed * ml/1000 > character.y && target.y - type.speed * ml/1000 < character.y){
+                                target.x += Math.sign(mover.x) * type.speed * ml/1000;
+                            } else{
+                                target.y += Math.sign(mover.y) * type.speed * ml/1000;
+                            }
                         }
                         break;
                 }
@@ -797,6 +867,11 @@
                         aoeTrackerID.push(skillIDCounter);
                         aoeCycler(aoes.length - 1);
                         break;
+                    case "Dash":
+                        ess[i].dashTime = type.dashTime;
+                        ess[i].dashX = mover.x;
+                        ess[i].dashY = mover.y;
+                        break;
                 }
             }
             if(target.x < 0){
@@ -837,8 +912,13 @@
                     cx.shadowColor = "gray";
                     cx.lineWidth = ml/1000;
                     cx.strokeRect(enemies[i].x - ml/enemies[i].width/2 * 0.85, enemies[i].y - ml/enemies[i].height/2 * 1.5, ml/enemies[i].width * 0.8, ml/enemies[i].height/10);
-                    cx.fillStyle = type.effectsColor;
-                    cx.shadowColor = type.effectsGlowColor;
+                    if(ess[i].healthBarCounter <= 100){
+                        cx.fillStyle = type.effectsColor;
+                        cx.shadowColor = type.effectsGlowColor;
+                    } else{
+                        cx.fillStyle = "green";
+                        cx.shadowColor = "lime";
+                    }
                     cx.fillRect(enemies[i].x - ml/enemies[i].width/2 * 0.85, enemies[i].y - ml/enemies[i].height/2 * 1.5, ml/enemies[i].width * 0.8 * ess[i].hp/type.hp, ml/enemies[i].height/10);
                     cx.globalAlpha = standardAlpha;
                 }
@@ -938,7 +1018,7 @@
                 cx.strokeText('Total XP Gained: ' + parseFloat(totalXP.toFixed(1)), c.width/2, c.height * 0.48)
                 cx.strokeText('Level Achieved: ' + level, c.width/2, c.height * 0.56)
                 cx.shadowColor = "yellow";
-                cx.strokeText('Press R to Restart', c.width/2, c.height * 0.64)
+                cx.strokeText('Press R to Restart', c.width/2, c.height * 0.64);
             }
         }
         function squarecomponent(width, height, x, y, color, glowcolor){
