@@ -32,7 +32,7 @@
         let gameOver = false;
         let pause = false;
         let waveActive = true;
-        let spawnFinish = false;
+        let spawnFinish = -waveActive;
         let directorAggression = 1 + (wave - 1) * 0.1;
         let directorCreditMulti = 50;
         let baseCredits = 75;
@@ -42,7 +42,7 @@
         let mouseY = 0;
         let kills = 0;
         let killedCost = 0;
-        let xp = 0;
+        let xp = 1000;
         let requiredXP = 20;
         let totalXP = 0;
         let preGameEnemyCycler = false;
@@ -73,6 +73,7 @@
         const aoes = [];
         const areass = [];
         const aoeTrackerID = [];
+        const items = [];
         window.addEventListener("resize", resize, false);
         window.addEventListener("keydown", keyhandler, false);
         window.addEventListener("keyup", movestopper, false);
@@ -125,7 +126,7 @@
                     }
                     break;
                 case "KeyZ":
-                    if(waveActive == false){
+                    if(waveActive == false && pause == false){
                         waveDelayCounter = waveDelay * 50;
                     }
                     break;
@@ -154,10 +155,6 @@
             this.randomPosY = Math.random();
             this.healthBarCounter = 0;
             this.randomChooser = randomInt(1, 2);
-            this.dashTimeRemaining = 0;
-            this.dashActive = false;
-            this.dashX = 0;
-            this.dashY = 0;
         }
         function laserSideStats(duration, damage, length, enemyorigintrackerid, xdirect, ydirect, type, changetype, angle){
             this.duration = duration;
@@ -186,14 +183,13 @@
             constructor(type){
                 //notes: ai requirements
                 //moveai = follow: follow distance
-                //shotai != undefined: shotdelay, projectile size, projectile speed, projectile properties, projectiledamage
+                //shotai != undefined: shotdelay, projectile size, projectile speed, projectile properties, projectiledamage, burst, burstdelay
                 //skill != undefined: skilldelay, skillduration, skillmove (true/false) 
                 //skill laser: laserspeed, laserlength (1500 = max, reaches regardless), skillOrigin, lasersize, laserdamage, lasertype
                 //lasertype == sweep: sweep precision (lower = better)
-                //contact == true: survivecontact
+                //contact == true: selfContactDamage
                 //lasertype == predict: predictprecision (how far in the future, in ms, that the laser will aim)
                 //skill == aoe: aoesize, aoedamage (multiplier), aoehealing (flat), damageconsume, healconsume
-                //dash == dashlength, dashtime
                 switch(type){
                     case 0:
                     case "Basic":
@@ -205,7 +201,7 @@
                         this.shotai = undefined;
                         this.skill = undefined;
                         this.contact = true;
-                        this.surviveContact = false;
+                        this.selfContactDamage = 1;
                         this.size = 40;
                         this.speed = 4;
                         this.damage = 3;
@@ -226,10 +222,14 @@
                         this.effectsGlowColor = "red";
                         this.skill = undefined;
                         this.contact = true;
-                        this.surviveContact = false;
+                        this.selfContactDamage = 1;
                         this.size = 30;
                         this.speed = 3;
                         this.damage = 2;
+                        this.burst = 1;
+                        this.burstDelay = 0;
+                        this.shotIterations = 1;
+                        this.iterationsDelay = 0;
                         this.hp = 12;
                         this.minWave = 3;
                         this.maxWave = 20;
@@ -253,7 +253,11 @@
                         this.shotai = "Basic";
                         this.skill = undefined;
                         this.contact = true;
-                        this.surviveContact = false;
+                        this.selfContactDamage = 1;
+                        this.burst = 1;
+                        this.burstDelay = 0;
+                        this.shotIterations = 1;
+                        this.iterationsDelay = 0;
                         this.size = 30;
                         this.speed = 3;
                         this.damage = 4;
@@ -280,7 +284,7 @@
                         this.shotai = undefined;
                         this.skill = undefined;
                         this.contact = true;
-                        this.surviveContact = false;
+                        this.selfContactDamage = 1;
                         this.size = 60;
                         this.speed = 7;
                         this.damage = 4;
@@ -301,7 +305,7 @@
                         this.shotai = undefined;
                         this.skill = undefined;
                         this.contact = true;
-                        this.surviveContact = false;
+                        this.selfContactDamage = 0.5;
                         this.size = 20;
                         this.speed = 2;
                         this.damage = 8;
@@ -310,34 +314,42 @@
                         this.maxWave = Infinity;
                         this.cost = 10;
                         this.reward = 3;
-                        this.weight = 2500;
+                        this.weight = 1500;
                         break;
                     case 4:
                     case "Tester":
-                        this.color = "black";
-                        this.glowcolor = "yellow";
-                        this.effectsColor = "white";
-                        this.effectsGlowColor = "white";
-                        this.moveai = "Converge";
-                        this.shotai = undefined;
-                        this.skill = "Laser";
+                        this.color = "gray";
+                        this.glowcolor = "darkslateblue";
+                        this.effectsColor = "red";
+                        this.effectsGlowColor = "red";
+                        this.moveai = "Follow";
+                        this.shotai = "Random";
+                        this.skill = undefined;
                         this.contact = true;
-                        this.surviveContact = true;
-                        this.size = 50;
-                        this.speed = 4;
-                        this.damage = 2;
-                        this.hp = 5000;
+                        this.selfContactDamage = 0;
+                        this.size = 30;
+                        this.speed = 10;
+                        this.damage = 5;
+                        this.hp = 7500;
                         this.minWave = 1;
                         this.maxWave = Infinity;
-                        this.cost = directorCredits;
+                        if(waveActive == false){
+                            this.cost = (directorCredits + directorCreditMulti);
+                        } else{
+                            this.cost = directorCredits; 
+                        }
                         this.reward = Infinity;
                         this.weight = Infinity;
-                        this.shotDelay = 20;
-                        this.projectileSize = 75;
-                        this.projectileSpeed = 20;
-                        this.followDistance = 0.5;
+                        this.shotDelay = 1000;
+                        this.projectileSize = 150;
+                        this.projectileSpeed = 10;
+                        this.followDistance = 0.6;
+                        this.burst = 20;
+                        this.burstDelay = 0;
+                        this.shotIterations = 5;
+                        this.iterationsDelay = 100;
                         this.projectileProperties = new bulletProperties(false);
-                        this.projectileDamage = 2;
+                        this.projectileDamage = 1;
                         this.skillDelay = 20;
                         this.skillDuration = 500;
                         this.skillMove = true;
@@ -348,15 +360,13 @@
                         this.skillOrigin = "TrueRandom";
                         this.laserType = "Predict";
                         this.predictPrecision = 500;
-                        this.sweepPrecision = 45;
+                        this.sweepPrecision = 90;
                         this.aoeSize = 100;
                         this.aoeWidth = 1;
-                        this.aoeDamage = 0.05;
-                        this.aoeHealing = 10000;
-                        this.damageConsume = false;
+                        this.aoeDamage = 0.25;
+                        this.aoeHealing = 500;
+                        this.damageConsume = true;
                         this.healConsume = true;
-                        this.dashLength = 100;
-                        this.dashTime = 10;
                         break;
                     default:
                         preGameEnemyCycler = true;
@@ -454,12 +464,10 @@
                 for(let i = 0; i < enemies.length; i++){
                     ess[i].healthBarCounter--;
                     ai(enemies[i], i);
-                    if(squareHitDetector(character.x, character.y, ml/character.width/2, ml/character.height/2, enemies[i].x, enemies[i].y, ml/enemies[i].width, ml/enemies[i].height) == true && invulnerable == false && enemyStatBlock[ess[i].type].contact == true){
+                    if(squareHitDetector(character.x, character.y, ml/character.width/2, ml/character.height/2, enemies[i].x, enemies[i].y, ml/enemies[i].width/2, ml/enemies[i].height/2) == true && invulnerable == false && enemyStatBlock[ess[i].type].contact == true){
                         damagePlayer(enemyStatBlock[ess[i].type].damage, false);
-                        if(enemyStatBlock[ess[i].type].surviveContact == false){
-                            ess[i].hp = 0;
-                            killChecker(i);
-                        }
+                        ess[i].hp += -enemyStatBlock[ess[i].type].selfContactDamage * enemyStatBlock[ess[i].type].hp;
+                        killChecker(i);
                         break;
                     }
                 }
@@ -536,7 +544,7 @@
                                 ess[t].healthBarCounter = 110;
                                 if(areass[i].healconsume == true){
                                     aoeDestroy(i);
-                                    continue aoerunner
+                                    continue aoerunner;
                                 }
                             } else{
                                 ess[t].hp += areass[i].healing;
@@ -564,7 +572,6 @@
                         for(let t = 0; t < enemies.length; t++){
                             if(squareHitDetector(enemies[t].x, enemies[t].y, ml/enemies[t].width/2, ml/enemies[t].height/2, bullets[i].x, bullets[i].y, ml/bullets[i].width/2, ml/bullets[i].height/2) == true){
                                 ess[t].hp += -playerDamage;
-                                ess[t].healthBarCounter = 100;
                                 killChecker(t);
                                 bulletDestroy(i);
                                 hit = true;
@@ -640,6 +647,7 @@
             bullProperties.splice(id, 1);
         }
         function killChecker(id){
+            ess[id].healthBarCounter = 100;
             if(ess[id].hp <= 0){
                 xp += enemyStatBlock[ess[id].type].reward;
                 totalXP += enemyStatBlock[ess[id].type].reward;
@@ -697,7 +705,7 @@
         if(xp > requiredXP){
             levelUp();
         }
-        async function ai(target, targetid){
+        function ai(target, targetid){
             let mover = new aimer(target.x, target.y, character.x, character.y);
             let distance = distanceCalc(target.x, target.y, character.x, character.y);
             let random = Math.random();
@@ -739,79 +747,7 @@
             }
             if(ess[targetid].shotavailable == true){
                 enemyShotCycler(targetid);
-                switch(shooterai){
-                    case "Basic":
-                        bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
-                        bss.push(new bulletSideStats(mover.x, mover.y, type.damage * type.projectileDamage, type.projectileSpeed));
-                        bullProperties.push(type.projectileProperties);
-                        break;
-                    case "Random":
-                        bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
-                        let quadrant = randomInt(1, 4);
-                        let randomNum = Math.random();
-                        switch(quadrant){
-                            case 1:
-                                bss.push(new bulletSideStats(randomNum, 1 - randomNum, type.damage * type.projectileDamage, type.projectileSpeed));
-                                break;
-                            case 2:
-                                bss.push(new bulletSideStats(-randomNum, 1 - randomNum, type.damage * type.projectileDamage, type.projectileSpeed));
-                                break;
-                            case 3:
-                                bss.push(new bulletSideStats(randomNum, -(1 - randomNum), type.damage * type.projectileDamage, type.projectileSpeed));
-                                break;
-                            case 4:
-                                bss.push(new bulletSideStats(-randomNum, -(1 - randomNum), type.damage * type.projectileDamage, type.projectileSpeed));
-                                break;
-                        }
-                        bullProperties.push(type.projectileProperties);
-                        break;
-                    case "Predictive":
-                        if(playerXDirect == 0 && playerYDirect == 0){
-                            bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
-                            bss.push(new bulletSideStats(mover.x, mover.y, type.damage * type.projectileDamage, type.projectileSpeed));
-                            bullProperties.push(type.projectileProperties);
-                        } else{
-                            let closeLevel = distance;
-                            let targetPosX = character.x;
-                            let targetPosY = character.y;
-                            for(let i = 0; i < 250; i++){
-                                let predictedX = character.x + playerXDirect * ml/1000 * playerSpeed * i;
-                                let predictedY = character.y + playerYDirect * ml/1000 * playerSpeed * i;
-                                let predictAimer = new aimer(target.x, target.y, predictedX, predictedY);
-                                if(predictedX < -ml/300 || predictedX > c.width + ml/300 || predictedY < -ml/300 || predictedY > c.height + ml/300){
-                                    break;
-                                }
-                                let adjustedBulletX = target.x + predictAimer.x * ml/1000 * type.projectileSpeed * i;
-                                let adjustedBulletY = target.y + predictAimer.y * ml/1000 * type.projectileSpeed * i;
-                                let predictedCloseness = distanceCalc(adjustedBulletX, adjustedBulletY, predictedX, predictedY);
-                                if(predictedCloseness < closeLevel){
-                                    closeLevel = predictedCloseness;
-                                    targetPosX = predictedX;
-                                    targetPosY = predictedY;
-                                }
-                                if(predictedCloseness < ml/1000 * type.projectileSpeed){
-                                    break;
-                                }
-                                // cx.strokeStyle = "red";
-                                // cx.beginPath();
-                                // cx.moveTo(target.x, target.y);
-                                // cx.lineTo(adjustedBulletX, adjustedBulletY);
-                                // cx.stroke();
-                                // cx.strokeStyle = "blue";
-                                // cx.beginPath();
-                                // cx.moveTo(character.x, character.y);
-                                // cx.lineTo(predictedX, predictedY);
-                                // cx.stroke();
-                                // await sleep(20);
-                            }
-                            let finalAimer = new aimer(target.x, target.y, targetPosX, targetPosY);
-                            bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
-                            bss.push(new bulletSideStats(finalAimer.x, finalAimer.y, type.damage * type.projectileDamage, type.projectileSpeed));
-                            bullProperties.push(type.projectileProperties);
-                        }
-                        break;
-                
-                }    
+                enemyShotSequence(target, targetid, type);
             }
             if(ess[targetid].skillavailable == true){
                 enemySkillCycler(targetid);
@@ -832,6 +768,26 @@
                     case "SetRandom":
                         tempXOrigin = ess[targetid].randomPosX * c.width;
                         tempYOrigin = ess[targetid].randomPosY * c.height;
+                        break;
+                    case "SideRandom":
+                        switch(randomInt(1, 4)){
+                            case 1:
+                                tempXOrigin = Math.random() * c.width;
+                                tempYOrigin = c.height;
+                                break;
+                            case 2:
+                                tempXOrigin = Math.random() * c.width;
+                                tempYOrigin = 0;
+                                break;
+                            case 3:
+                                tempXOrigin = 0;
+                                tempYOrigin = Math.random() * c.height;
+                                break;
+                            case 4:
+                                tempXOrigin = c.width;
+                                tempYOrigin = Math.random() * c.height;
+                                break;
+                        }
                         break;
                     case "TrueRandom":
                         tempXOrigin = Math.random() * c.width;
@@ -867,11 +823,6 @@
                         aoeTrackerID.push(skillIDCounter);
                         aoeCycler(aoes.length - 1);
                         break;
-                    case "Dash":
-                        ess[i].dashTime = type.dashTime;
-                        ess[i].dashX = mover.x;
-                        ess[i].dashY = mover.y;
-                        break;
                 }
             }
             if(target.x < 0){
@@ -883,6 +834,82 @@
                 target.y = 0;
             } else if (target.y > c.height){
                 target.y = c.height;
+            }
+        }
+        async function enemyShotSequence(target, targetid, type){
+            let shooterai = type.shotai;
+            let mover = new aimer(target.x, target.y, character.x, character.y);
+            let distance = distanceCalc(target.x, target.y, character.x, character.y);
+            for(let t = 0; t < type.shotIterations; t++){
+                for(let i = 0; i < type.burst; i++){
+                    switch(shooterai){
+                        case "Basic":
+                            bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
+                            bss.push(new bulletSideStats(mover.x, mover.y, type.damage * type.projectileDamage, type.projectileSpeed));
+                            bullProperties.push(type.projectileProperties);
+                            break;
+                        case "Random":
+                            bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
+                            let quadrant = randomInt(1, 4);
+                            let randomNum = Math.random();
+                            switch(quadrant){
+                                case 1:
+                                    bss.push(new bulletSideStats(randomNum, 1 - randomNum, type.damage * type.projectileDamage, type.projectileSpeed));
+                                    break;
+                                case 2:
+                                    bss.push(new bulletSideStats(-randomNum, 1 - randomNum, type.damage * type.projectileDamage, type.projectileSpeed));
+                                    break;
+                                case 3:
+                                    bss.push(new bulletSideStats(randomNum, -(1 - randomNum), type.damage * type.projectileDamage, type.projectileSpeed));
+                                    break;
+                                case 4:
+                                    bss.push(new bulletSideStats(-randomNum, -(1 - randomNum), type.damage * type.projectileDamage, type.projectileSpeed));
+                                    break;
+                            }
+                            bullProperties.push(type.projectileProperties);
+                            break;
+                        case "Predictive":
+                            if(playerXDirect == 0 && playerYDirect == 0){
+                                bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
+                                bss.push(new bulletSideStats(mover.x, mover.y, type.damage * type.projectileDamage, type.projectileSpeed));
+                                bullProperties.push(type.projectileProperties);
+                            } else{
+                                let closeLevel = distance;
+                                let targetPosX = character.x;
+                                let targetPosY = character.y;
+                                for(let i = 0; i < 250; i++){
+                                    let predictedX = character.x + playerXDirect * ml/1000 * playerSpeed * i;
+                                    let predictedY = character.y + playerYDirect * ml/1000 * playerSpeed * i;
+                                    let predictAimer = new aimer(target.x, target.y, predictedX, predictedY);
+                                    if(predictedX < -ml/300 || predictedX > c.width + ml/300 || predictedY < -ml/300 || predictedY > c.height + ml/300){
+                                        break;
+                                    }
+                                    let adjustedBulletX = target.x + predictAimer.x * ml/1000 * type.projectileSpeed * i;
+                                    let adjustedBulletY = target.y + predictAimer.y * ml/1000 * type.projectileSpeed * i;
+                                    let predictedCloseness = distanceCalc(adjustedBulletX, adjustedBulletY, predictedX, predictedY);
+                                    if(predictedCloseness < closeLevel){
+                                        closeLevel = predictedCloseness;
+                                        targetPosX = predictedX;
+                                        targetPosY = predictedY;
+                                    }
+                                    if(predictedCloseness < ml/1000 * type.projectileSpeed){
+                                        break;
+                                    }
+                                }
+                                let finalAimer = new aimer(target.x, target.y, targetPosX, targetPosY);
+                                bullets.push(new squarecomponent(type.projectileSize, type.projectileSize, target.x, target.y, type.effectsColor, type.effectsGlowColor));
+                                bss.push(new bulletSideStats(finalAimer.x, finalAimer.y, type.damage * type.projectileDamage, type.projectileSpeed));
+                                bullProperties.push(type.projectileProperties);
+                            }
+                            break;                
+                    }
+                    if(type.burstDelay != 0){
+                        await sleep(type.burstDelay); 
+                    }
+                }
+                if(type.iterationsDelay != 0){
+                    await sleep(type.iterationsDelay)
+                }
             }
         }
         function render(){
@@ -1162,7 +1189,7 @@
             if(waveActive == true)
             {   let choice = true;
                 while(directorCredits >= minCost){
-                    if(choice == true){
+                    if(choice == true && enemyCount != 0){
                         await sleep(randomInt(1500, 3000)/directorAggression);
                     }
                     choice = false;
