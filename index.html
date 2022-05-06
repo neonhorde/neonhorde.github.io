@@ -20,6 +20,9 @@
         let movingRamMulti = 1;
         let movingContactReduction = 1;
         let shotDelay = 400;
+        let curseCircleSize = 70;
+        let curseCircleDamage = 0.1;
+        let curseCircleSpeed = 3.5; 
         let overhaul = false;
         let bounceChance = 0;
         let bounceTimes = 0;
@@ -33,11 +36,15 @@
         let bulletSpeed = 20;
         let level = 1;
         let playerDamage = 5;
+        let playerDamageMulti = 1;
         let maxHpPerLevel = 3;
         let maxHealth = 25 + (level - 1) * maxHpPerLevel;
         let maxShield = 0
         let shield = maxShield
         let shieldAttackSpeedBonus = 1
+        let shieldBreakAoeDamage = 0
+        let shieldBreakAoeDuration = 3000
+        let shieldBreakAoeSize = 100
         let shieldRegenDelay = 5
         let shieldRegenTime = 3
         let iframes = 300;
@@ -110,6 +117,7 @@
         this.deathBurstIncrease = 1.5;
         let requiredXP = 14;
         let xpGain = 1;
+        let multiplicativeXpGain = 1;
         let xpGrowth = 1.08;
         let deathBurstDuration = 0;
         let totalXP = xp;
@@ -1616,6 +1624,146 @@
                             cx.strokeRect(xoffset + ml * 0.03 * size, yoffset + ml * 0.02 * size, ml * 0.04 * size, ml * 0.06 * size);
                         }
                         break;
+                    case 39:
+                        this.nameColor = "white";
+                        this.nameGlowColor = "cyan";
+                        this.name = "Desperation Overcharge";
+                        this.maxPurchases = 3;
+                        this.baseCopies = 180;
+                        this.description = ["When your shield breaks, spawn an aoe around you that deals 150% (+150% per stack) of your base damage and lasts for 5 seconds.", 'Max Stacks: ' + this.maxPurchases];
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[37].purchased >= 1 && totalItemList[34].purchased >= 2;
+                        }
+                        this.buy = function(){
+                            shieldBreakAoeDamage += 1.5
+                            this.baseCopies += 30;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.strokeStyle = "blue";
+                            cx.shadowColor = "blue";
+                            cx.beginPath();
+                            cx.arc(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size, ml * 0.045 * size, 0, Math.PI * 2);
+                            cx.stroke();
+                            cx.strokeStyle = "red";
+                            cx.shadowColor = "red";
+                            cx.beginPath();
+                            cx.arc(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size, ml * 0.04 * size, 0, Math.PI * 2);
+                            cx.stroke();
+                        }
+                        break;
+                    case 40:
+                        this.nameColor = "white";
+                        this.nameGlowColor = "red";
+                        this.name = "Elemental Powered Gatling";
+                        this.maxPurchases = 1;
+                        this.baseCopies = 3;
+                        this.description = ["Forbidden Upgrade", "Doubles your attack speed, but halves all damage you deal, regardless of type."];
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            shotDelay *= 0.5;
+                            playerDamageMulti *= 0.5;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.lineWidth = 0.003 * size * ml;
+                            cx.strokeStyle = "red";
+                            cx.shadowColor = "red";
+                            cx.strokeRect(xoffset, yoffset, ml * 0.1 * size, ml * 0.1 * size);
+                            cx.strokeStyle = "white";
+                            cx.shadowColor = "white";
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.01 * size, ml * 0.05 * size);
+                            cx.strokeStyle = "red";
+                            cx.shadowColor = "red";
+                            cx.strokeRect(xoffset + ml * 0.04 * size, yoffset + ml * 0.03 * size, ml * 0.05 * size, ml * 0.01 * size);
+                            cx.strokeStyle = "blue";
+                            cx.shadowColor = "blue";
+                            cx.strokeRect(xoffset + ml * 0.04 * size, yoffset + ml * 0.045 * size, ml * 0.05 * size, ml * 0.01 * size);
+                            cx.strokeStyle = "lime";
+                            cx.shadowColor = "lime";
+                            cx.strokeRect(xoffset + ml * 0.04 * size, yoffset + ml * 0.06 * size, ml * 0.05 * size, ml * 0.01 * size);
+                        }
+                        break;
+                    case 41:
+                        this.nameColor = "white";
+                        this.nameGlowColor = "red";
+                        this.name = "Curse of Wisdom";
+                        this.maxPurchases = 1;
+                        this.baseCopies = 3;
+                        this.description = ["Forbidden Upgrade", "Doubles your xp gain, but you shall anger the deities who control the knowledge."];
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            multiplicativeXpGain *= 2;
+                            skillIDCounter++;
+                            aoes.push(new circlecomponent(0, 0, curseCircleSize, ml/1000, 'lime', 'lime'));
+                            areass.push(new areasSideStats(0, curseCircleDamage, 0, 'Curse', false, false));
+                            aoeTrackerID.push(skillIDCounter);
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.lineWidth = 0.003 * size * ml;
+                            cx.strokeStyle = "red";
+                            cx.shadowColor = "red";
+                            cx.strokeRect(xoffset, yoffset, ml * 0.1 * size, ml * 0.1 * size);
+                            cx.strokeStyle = "lime";
+                            cx.shadowColor = "blue";
+                            cx.beginPath();
+                            cx.arc(xoffset + ml * size * 0.05, yoffset + ml * 0.04 * size, 0.03 * size * ml, Math.PI, Math.PI * 2);
+                            cx.moveTo(xoffset + ml * size * 0.02, yoffset + ml * 0.04 * size);
+                            cx.lineTo(xoffset + ml * size * 0.05, yoffset + ml * 0.09 * size);
+                            cx.lineTo(xoffset + ml * size * 0.08, yoffset + ml * 0.04 * size);
+                            cx.stroke()
+                            cx.fillStyle = 'lime';
+                            cx.shadowColor = 'lime';
+                            cx.beginPath()
+                            cx.moveTo(xoffset + ml * size * 0.04, yoffset + ml * 0.04 * size);
+                            cx.arc(xoffset + ml * size * 0.04, yoffset + ml * 0.04 * size, 0.008 * size * ml, 0, Math.PI * 2);
+                            cx.moveTo(xoffset + ml * size * 0.06, yoffset + ml * 0.04 * size);
+                            cx.arc(xoffset + ml * size * 0.06, yoffset + ml * 0.04 * size, 0.008 * size * ml, 0, Math.PI * 2);
+                            cx.fill();
+                        }
+                        break;
+                    case 42:
+                        this.nameColor = "white";
+                        this.nameGlowColor = "red";
+                        this.name = "Glass Mainframe";
+                        this.maxPurchases = 1;
+                        this.baseCopies = 3;
+                        this.description = ["Forbidden Upgrade", "Doubles all damage you deal and receive."];
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            damageReduction *= 2;
+                            playerDamageMulti *= 2;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.lineWidth = 0.003 * size * ml;
+                            cx.strokeStyle = "red";
+                            cx.shadowColor = "red";
+                            cx.strokeRect(xoffset, yoffset, ml * 0.1 * size, ml * 0.1 * size);
+                            cx.strokeStyle = "white";
+                            cx.shadowColor = "white";
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                        }
+                        break;
                     default:
                         preGameCycler = true;
                         break;
@@ -2020,7 +2168,7 @@
                     ai(enemies[i], i);
                     if(squareHitDetector(character.x, character.y, ml/2000 * character.width, ml/2000 * character.height, enemies[i].x, enemies[i].y, ml/2000 * enemies[i].width, ml/2000 * enemies[i].height) == true && invulnerable == false && enemyStatBlock[ess[i].type].contact == true){
                         damagePlayer(enemyStatBlock[ess[i].type].damage, "Contact");
-                        ess[i].hp += -(enemyStatBlock[ess[i].type].selfContactDamage * enemyStatBlock[ess[i].type].hp * globalEnemyHP + baseRammingDamage) * rammingDamage * movingRamMulti;
+                        ess[i].hp += -(enemyStatBlock[ess[i].type].selfContactDamage * enemyStatBlock[ess[i].type].hp * globalEnemyHP + baseRammingDamage) * rammingDamage * movingRamMulti * playerDamageMulti;
                         if(ess[i].hp <= 0){
                             storedRammingHP += rammingGains;
                             if(killTime < chainRammingTime * 50){
@@ -2079,7 +2227,7 @@
                     if (areass[i].eoti == 'Player'){
                         for(let  t = 0; t < enemies.length; t++){
                             if(distanceCalc(aoes[i].x, aoes[i].y, enemies[t].x, enemies[t].y) - ml/2000 * enemies[t].width < ml/1000 * aoes[i].r){
-                                ess[t].hp -= areass[i].damage;
+                                ess[t].hp -= areass[i].damage * playerDamageMulti;
                                 killChecker(t, "DOT");
                                 if(areass[i].damageconsume == true){
                                     aoeDestroy(i);
@@ -2114,12 +2262,18 @@
                                 }
                             }
                         }
-                        let statCaller = enemyStatBlock[ess[enemyTrackerID.indexOf(areass[i].eoti)].type];
-                        switch(statCaller.skillOrigin){
-                            case "Dynamic":
-                                aoes[i].x = enemies[enemyTrackerID.indexOf(areass[i].eoti)].x;
-                                aoes[i].y = enemies[enemyTrackerID.indexOf(areass[i].eoti)].y;
-                                break;
+                        if (areass[i].eoti == "Curse"){
+                            let tempAimer = new aimer(aoes[i].x, aoes[i].y, character.x, character.y);
+                            aoes[i].x += tempAimer.x * curseCircleSpeed * ml/1000;
+                            aoes[i].y += tempAimer.y * curseCircleSpeed * ml/1000;
+                        } else{
+                            let statCaller = enemyStatBlock[ess[enemyTrackerID.indexOf(areass[i].eoti)].type];
+                            switch(statCaller.skillOrigin){
+                                case "Dynamic":
+                                    aoes[i].x = enemies[enemyTrackerID.indexOf(areass[i].eoti)].x;
+                                    aoes[i].y = enemies[enemyTrackerID.indexOf(areass[i].eoti)].y;
+                                    break;
+                            }
                         }
                     }
                 }
@@ -2151,7 +2305,7 @@
                         let totalDamage;
                         for(let t = 0; t < enemies.length; t++){
                             if(squareHitDetector(enemies[t].x, enemies[t].y, ml/2000 * enemies[t].width, ml/2000 * enemies[t].height, bullets[i].x, bullets[i].y, ml/2000 * bullets[i].width, ml/2000 * bullets[i].height) && bss[i].interacting.indexOf(enemyTrackerID[t]) === -1){
-                                totalDamage = bss[i].damage
+                                totalDamage = bss[i].damage * playerDamageMulti
                                 if(Math.random() < critChance){
                                     totalDamage *= critDamage;
                                     onCritEffects(bullets[i].x, bullets[i].y)
@@ -2208,10 +2362,10 @@
                 extraShots++;
             }
             if(critAoeDuration > 0){
+                skillIDCounter++;
                 aoes.push(new circlecomponent(impactx, impacty, critAoeSize, ml/1000, 'cyan', 'cyan'));
                 areass.push(new areasSideStats(critAoeDuration * 1000, critAoeDamage * playerDamage/50, 0, 'Player', false, false));
                 aoeTrackerID.push(skillIDCounter);
-                skillIDCounter++;
                 aoeCycler(aoes.length - 1);
             }
         }
@@ -2311,8 +2465,9 @@
                 if(damagedealt < 0){
                     damagedealt = 0
                 }
-                if(shield < 0){
+                if(shield <= 0){
                     shield = 0
+                    shieldBreakEffects()
                 }
             }
             health -= damagedealt
@@ -2332,6 +2487,15 @@
                 health = 0;
                 window.clearInterval(gameRunner)
                 render();
+            }
+        }
+        function shieldBreakEffects(){
+            if (shieldBreakAoeDamage > 0){
+                skillIDCounter++;
+                aoes.push(new circlecomponent(character.x, character.y, shieldBreakAoeSize, ml/1000, 'cyan', 'cyan'));
+                areass.push(new areasSideStats(shieldBreakAoeDuration, shieldBreakAoeDamage * playerDamage/50, 0, 'Player', false, false));
+                aoeTrackerID.push(skillIDCounter);
+                aoeCycler(aoes.length - 1);
             }
         }
         function bulletDestroy(id){
@@ -2377,8 +2541,8 @@
             ess[id].healthBarCounter = 100;
             if(ess[id].hp <= 0){
                 lastKillType = type;
-                xp += enemyStatBlock[ess[id].type].reward * xpGain;
-                totalXP += enemyStatBlock[ess[id].type].reward * xpGain;
+                xp += enemyStatBlock[ess[id].type].reward * xpGain * multiplicativeXpGain;
+                totalXP += enemyStatBlock[ess[id].type].reward * xpGain * multiplicativeXpGain;
                 if(xp >= requiredXP){
                     levelUp();
                 }
