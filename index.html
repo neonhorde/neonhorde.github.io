@@ -11,20 +11,23 @@
         const c = document.getElementById("gamescreen");
         const cx = c.getContext("2d");
         let ml;
+        let devMode = false;
         let playerSize = 25;
         let bulletSize = 10;
         let playerYDirect = 0;
         let playerXDirect = 0;
         let playerSpeed = 5;
+        let playerProjectiles = 1;
         let moving = false;
+        let shotSpread = 0;
         let movingRamMulti = 1;
         let movingContactReduction = 1;
         let shotDelay = 400;
         let curseCircleSize = 70;
-        let curseCircleDamage = 1000000;
         let curseCircleSpeed = 0.8; 
         let overhaul = false;
-        let curseChance = 0.025;
+        let curseChance = 0.015;
+        let curseChanceLoss = 0.5;
         let bounceChance = 0;
         let bounceTimes = 0;
         let pierceChance = 0;
@@ -38,6 +41,7 @@
         let level = 1;
         let playerDamage = 5;
         let playerDamageMulti = 1;
+        let additivePlayerDamageMulti = 1;
         let maxHpPerLevel = 3;
         let maxHealth = 25 + (level - 1) * maxHpPerLevel;
         let maxShield = 0
@@ -90,9 +94,18 @@
         let health = maxHealth;
         let shotAvailable = false;
         let shooting = false;
+        let xp = 0;
         let autofire = false;
-        let enemyHpScaling = 1.08
-        let enemyDamageScaling = 1.04
+        let waveActive = true;
+        let spawnFinish = -waveActive;
+        if(devMode){
+            xp = 1000000000000000000000000000000000000;
+            waveActive = false;
+            spawnFinish = true;
+            wave = 50;
+        }
+        let enemyHpScaling = 1.1;
+        let enemyDamageScaling = 1.04;
         let globalEnemyHP = 1 * Math.pow(enemyHpScaling, wave - 1);
         let globalEnemyDamage = 1 * Math.pow(enemyDamageScaling, wave - 1);;
         let enemyCount = 0;
@@ -104,8 +117,6 @@
         let damageTime = 0;
         let gameOver = false;
         let pause = false;
-        let waveActive = true;
-        let spawnFinish = -waveActive;
         let directorAggression = 1 + (wave - 1) * 0.1;
         let directorCreditMulti = 50;
         let baseCredits = 75;
@@ -115,8 +126,7 @@
         let mouseY = 0;
         let kills = 0;
         let killedCost = 0;
-        let xp = 0;
-        this.deathBurstIncrease = 1.5;
+        let deathBurstIncrease = 1.5;
         let requiredXP = 14;
         let xpGain = 1;
         let multiplicativeXpGain = 1;
@@ -171,8 +181,10 @@
             if(inspecting != 0 && pause == true && skillPoints > 0 && offeredItems[inspecting - 1] !== undefined && inspectingTarget == 1){
                 skillPoints--;
                 offeredItems[inspecting - 1].buy();
+                if(totalItemList[offeredItems[inspecting - 1].trackerID].purchased == 0){
+                    purchasedItems.push(offeredItems[inspecting - 1])
+                }
                 totalItemList[offeredItems[inspecting - 1].trackerID].purchased++;
-                purchasedItems.push(offeredItems[inspecting - 1])
                 itemRoll();
             } else if(inspectingTarget == 3){
                 if (pause == true && rerolls > 0){
@@ -211,7 +223,7 @@
                 inspectingTarget = 0;
                 inspecting = 0;
                 for(let i = 0; i < purchasedItems.length; i++){
-                    if(squareHitCornerDetector(mouseX, mouseY, 0, 0, ml/40 * Math.floor(i/mlhr), ml/40 * (i - Math.floor(i/mlhr) * mlhr) + ml/100, ml/50, ml/50)){
+                    if(squareHitCornerDetector(mouseX, mouseY, 0, 0, ml/30 * Math.floor(i/mlhr), ml/40 * (i - Math.floor(i/mlhr) * mlhr) + ml/100, ml/50, ml/50)){
                         inspecting = i;
                         inspectingTarget = 2;
                         break;
@@ -232,8 +244,10 @@
                     if(skillPoints > 0 && pause == true && offeredItems[target] !== undefined){
                         skillPoints--;
                         offeredItems[target].buy();
+                        if(totalItemList[offeredItems[target].trackerID].purchased == 0){
+                            purchasedItems.push(offeredItems[target])
+                        }
                         totalItemList[offeredItems[target].trackerID].purchased++;
-                        purchasedItems.push(offeredItems[target])
                         itemRoll();
                     }
                     break;
@@ -1450,7 +1464,7 @@
                         this.boxStyle = 'gold';
                         this.boxGlowStyle = 'gold';
                         this.description = function(){
-                            return ["Reduces your max hp by 35. In return, increases your chance to fire piercing and bouncing bullets by an additive 20%. Increases bullet duration by 1.2 seconds and increases the amount of fragment bullets fired by 2.", "Purchasing an overhaul upgrade will lock you out from purchasing any other."];
+                            return ["Reduces your max hp by 35. In return, increases your chance to fire piercing and bouncing bullets by an additive 20%. Also increases bullet duration by 1.2 seconds", "Purchasing an overhaul upgrade will lock you out from purchasing any other."];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -1464,7 +1478,6 @@
                             pierceChance += 0.2;
                             bounceChance += 0.2;
                             bulletDuration += 60;
-                            fragmentBullets += 2;
                             overhaul = true;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -1761,7 +1774,7 @@
                         }
                         this.buy = function(){
                             shotDelay *= 0.5;
-                            curseChance *= 0.5;
+                            curseChance *= curseChanceLoss;
                             playerDamageMulti *= 0.5;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -1802,10 +1815,10 @@
                         }
                         this.buy = function(){
                             multiplicativeXpGain *= 2;
-                            curseChance *= 0.5;
+                            curseChance *= curseChanceLoss;
                             skillIDCounter++;
                             aoes.push(new circlecomponent(0, 0, curseCircleSize, ml/1000, 'lime', 'lime'));
-                            areass.push(new areasSideStats(0, curseCircleDamage, 0, 'Curse', false, false));
+                            areass.push(new areasSideStats(0, 0, 0, 'Curse', false, false));
                             aoeTrackerID.push(skillIDCounter);
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -1850,7 +1863,7 @@
                         }
                         this.buy = function(){
                             damageReduction *= 2;
-                            curseChance *= 0.5;
+                            curseChance *= curseChanceLoss;
                             playerDamageMulti *= 2;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -2059,7 +2072,7 @@
                         this.effectsColor = "red";
                         this.effectsGlowColor = "red";
                         this.moveai = "Follow";
-                        this.shotai = undefined;
+                        this.shotai = 'DirectedAngle';
                         this.skill = undefined;
                         this.contact = true;
                         this.selfContactDamage = 0;
@@ -2070,8 +2083,8 @@
                         this.minWave = 1;
                         this.shotMinAngle = 0;
                         this.shotMaxAngle = 360;
-                        this.angleOffset = 0;
-                        this.cycleCount = 1;
+                        this.angleOffset = 180;
+                        this.cycleCount = 360;
                         this.projectileDuration = 500;
                         this.burstChange = true;
                         this.maxWave = Infinity;
@@ -2082,11 +2095,11 @@
                         }
                         this.reward = Infinity;
                         this.weight = 0;
-                        this.shotDelay = 100;
+                        this.shotDelay = 1000;
                         this.projectileSize = 10;
                         this.projectileSpeed = 10;
                         this.followDistance = 0.1;
-                        this.burst = 1;
+                        this.burst = 360;
                         this.burstDelay = 0;
                         this.shotIterations = 1;
                         this.iterationsDelay = 0;
@@ -2269,7 +2282,7 @@
                     ai(enemies[i], i);
                     if(squareHitDetector(character.x, character.y, ml/2000 * character.width, ml/2000 * character.height, enemies[i].x, enemies[i].y, ml/2000 * enemies[i].width, ml/2000 * enemies[i].height) == true && invulnerable == false && enemyStatBlock[ess[i].type].contact == true){
                         damagePlayer(enemyStatBlock[ess[i].type].damage, "Contact");
-                        ess[i].hp += -(enemyStatBlock[ess[i].type].selfContactDamage * enemyStatBlock[ess[i].type].hp * globalEnemyHP + baseRammingDamage) * rammingDamage * movingRamMulti * playerDamageMulti;
+                        ess[i].hp += -(enemyStatBlock[ess[i].type].selfContactDamage * enemyStatBlock[ess[i].type].hp * globalEnemyHP + baseRammingDamage) * rammingDamage * movingRamMulti * playerDamageMulti * additivePlayerDamageMulti;
                         if(ess[i].hp <= 0){
                             storedRammingHP += rammingGains;
                             if(killTime < chainRammingTime * 50){
@@ -2285,7 +2298,9 @@
                 if(shotAvailable == true && shooting == true || shotAvailable == true && autofire == true){
                     shotCycler();
                     let tempAimer = new aimer(character.x, character.y, mouseX, mouseY);
-                    playerShoot(tempAimer.x, tempAimer.y, 1);
+                    for(let i = 0; i < playerProjectiles; i++){
+                        playerShoot(tempAimer.x, tempAimer.y, 1);
+                    }
                 }
                 for(let i = 0; i < lasers.length; i++){
                     if(lineHitDetector(lasers[i].startx, lasers[i].endx, lasers[i].starty, lasers[i].endy, lss[i].xdirect, lss[i].ydirect, lasers[i].size, character.x, character.y, ml/2000 * playerSize) == true){
@@ -2328,7 +2343,7 @@
                     if (areass[i].eoti == 'Player'){
                         for(let  t = 0; t < enemies.length; t++){
                             if(distanceCalc(aoes[i].x, aoes[i].y, enemies[t].x, enemies[t].y) - ml/2000 * enemies[t].width < ml/1000 * aoes[i].r){
-                                ess[t].hp -= areass[i].damage * playerDamageMulti;
+                                ess[t].hp -= areass[i].damage * playerDamageMulti * additivePlayerDamageMulti;
                                 killChecker(t, "DOT");
                                 if(areass[i].damageconsume == true){
                                     aoeDestroy(i);
@@ -2339,7 +2354,7 @@
                     } else{
                         if(distanceCalc(aoes[i].x, aoes[i].y, character.x, character.y) - ml/2000 * character.width < ml/1000 * aoes[i].r){
                             if (areass[i].eoti == 'Curse'){
-                                damagePlayer(areass[i].damage * maxHealth, "DOT");
+                                damagePlayer(maxHealth, undefined);
                             } else{
                                 damagePlayer(areass[i].damage, "DOT");
                             }
@@ -2410,7 +2425,7 @@
                         let totalDamage;
                         for(let t = 0; t < enemies.length; t++){
                             if(squareHitDetector(enemies[t].x, enemies[t].y, ml/2000 * enemies[t].width, ml/2000 * enemies[t].height, bullets[i].x, bullets[i].y, ml/2000 * bullets[i].width, ml/2000 * bullets[i].height) && bss[i].interacting.indexOf(enemyTrackerID[t]) === -1){
-                                totalDamage = bss[i].damage * playerDamageMulti
+                                totalDamage = bss[i].damage * playerDamageMulti * additivePlayerDamageMulti;
                                 if(Math.random() < critChance){
                                     totalDamage *= critDamage;
                                     onCritEffects(bullets[i].x, bullets[i].y)
@@ -2418,7 +2433,7 @@
                                 let previousHP = ess[t].hp
                                 ess[t].hp -= totalDamage;
                                 bss[i].interacting.push(enemyTrackerID[t]);
-                                if(bullProperties[i].piercing == true){
+                                if(bullProperties[i].piercing){
                                     bss[i].damage -= previousHP * pierceLoss;
                                     bss[i].originalDamage = bss[i].damage;
                                     bullets[i].width = bullets[i].originalWidth;
@@ -2561,9 +2576,6 @@
                     currentDCH = damage * delayedContactHealing * globalEnemyDamage;
                     storedDCH = currentDCH;
                     break;
-                case normal:
-                    health += -damage;
-                    break;
             }
             if(shield > 0){
                 let tempshieldvalue = shield
@@ -2637,6 +2649,11 @@
             }
             if(Math.random() < pierceChance){
                 piercing = true;
+            }
+            if(shotSpread != 0){
+                let shotAngle = Math.atan2(aimx, aimy) * 180/Math.PI + randomInt(-shotSpread, shotSpread);
+                aimx = Math.sin(shotAngle/180 * Math.PI)
+                aimy = Math.cos(shotAngle/180 * Math.PI)
             }
             bss.push(new bulletSideStats(aimx, aimy, playerDamage * damagemulti, bulletSpeed, bulletDuration, "Player"));
             bullets.push(new squarecomponent(bulletSize, bulletSize, character.x, character.y, "white", "cyan"));
@@ -3085,8 +3102,8 @@
                 cx.globalAlpha = standardAlpha;
             }
             if(pause == true){
-                cx.globalAlpha = 1;
                 let tempxoffset = 0;
+                cx.globalAlpha = 1;
                 for (let i = 0; i < purchasedItems.length; i++){
                     if(i % mlhr == 0 && i != 0){
                         tempxoffset++;
@@ -3094,8 +3111,18 @@
                     cx.shadowColor = purchasedItems[i].boxGlowStyle;
                     cx.strokeStyle = purchasedItems[i].boxStyle;
                     cx.lineWidth = ml/1000;
-                    cx.strokeRect(ml/40 * tempxoffset, ml/40 * (i - tempxoffset * mlhr) + ml/100, ml * 0.02, ml * 0.02);
-                    purchasedItems[i].icon(ml/40 * tempxoffset, ml/40 * (i - tempxoffset * mlhr) + ml/100, 0.2);
+                    let xpos = ml/30 * tempxoffset;
+                    let ypos =  ml/40 * (i - tempxoffset * mlhr) + ml/100;
+                    cx.strokeRect(xpos, ypos, ml * 0.02, ml * 0.02);
+                    purchasedItems[i].icon(xpos, ypos, 0.2);
+                    let amountPurchased = totalItemList[purchasedItems[i].trackerID].purchased
+                    if(amountPurchased > 1){
+                        cx.shadowColor = 'white';
+                        cx.strokeStyle = 'white';
+                        cx.font = ml/100 + "px Arial";
+                        cx.lineWidth = ml/2000;
+                        cx.strokeText("X" + amountPurchased, xpos + ml * 0.02, ypos + ml * 0.005);
+                    }
                 }
                 cx.shadowColor = "blue";
                 cx.strokeStyle = "white";
@@ -3199,7 +3226,7 @@
                             break;
                     }
                 } else if (inspectingTarget == 2){
-                    cx.fillRect(ml/40 * Math.floor(inspecting/mlhr), ml/40 * (inspecting - Math.floor(inspecting/mlhr) * mlhr) + ml/100, ml/50, ml/50);
+                    cx.fillRect(ml/30 * Math.floor(inspecting/mlhr), ml/40 * (inspecting - Math.floor(inspecting/mlhr) * mlhr) + ml/100, ml/50, ml/50);
                 } else if (inspectingTarget == 3){
                     cx.fillRect(c.width * 0.45, c.height * 0.15, c.width * 0.1, c.height * 0.05);
                     cx.strokeStyle = "white";
