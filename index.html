@@ -21,10 +21,10 @@
         let movingContactReduction = 1;
         let shotDelay = 400;
         let curseCircleSize = 70;
-        let curseCircleDamage = 0.02;
-        let curseCircleSpeed = 3.5; 
+        let curseCircleDamage = 1000000;
+        let curseCircleSpeed = 0.8; 
         let overhaul = false;
-        let curseChance = 0.05;
+        let curseChance = 0.025;
         let bounceChance = 0;
         let bounceTimes = 0;
         let pierceChance = 0;
@@ -54,6 +54,7 @@
         let levelRegen = 0;
         let combatRegen = 0;
         let regenDelay = 5;
+        let baseSpawnTime = 1000;
         let deathMissleDamage = 0;
         let critChance = 0;
         let critShadowChance = 0;
@@ -2338,7 +2339,7 @@
                     } else{
                         if(distanceCalc(aoes[i].x, aoes[i].y, character.x, character.y) - ml/2000 * character.width < ml/1000 * aoes[i].r){
                             if (areass[i].eoti == 'Curse'){
-                                damagePlayer(areass[i].damage * maxHealth/50, "DOT");
+                                damagePlayer(areass[i].damage * maxHealth, "DOT");
                             } else{
                                 damagePlayer(areass[i].damage, "DOT");
                             }
@@ -2368,8 +2369,8 @@
                         }
                         if (areass[i].eoti == "Curse"){
                             let tempAimer = new aimer(aoes[i].x, aoes[i].y, character.x, character.y);
-                            aoes[i].x += tempAimer.x * curseCircleSpeed * ml/1000;
-                            aoes[i].y += tempAimer.y * curseCircleSpeed * ml/1000;
+                            aoes[i].x += tempAimer.x * curseCircleSpeed * ml/1000 * playerSpeed;
+                            aoes[i].y += tempAimer.y * curseCircleSpeed * ml/1000 * playerSpeed;
                         } else{
                             let statCaller = enemyStatBlock[ess[enemyTrackerID.indexOf(areass[i].eoti)].type];
                             switch(statCaller.skillOrigin){
@@ -2553,9 +2554,9 @@
                     break;
                 case "Contact": 
                     if(killTime < rammingImmunityTime * 50 || lastKillType !== "Ramming"){
-                        damagedealt = 0;
-                    } else{
                         damagedealt *= contactDamageReduction * movingContactReduction
+                    } else{
+                        damagedealt = 0;
                     }
                     currentDCH = damage * delayedContactHealing * globalEnemyDamage;
                     storedDCH = currentDCH;
@@ -3438,7 +3439,7 @@
             {   let choice = true;
                 while(directorCredits >= minCost){
                     if(choice == true && enemyCount != 0){
-                        await sleep(randomInt(1500, 3000)/directorAggression);
+                        await sleep(randomInt(baseSpawnTime, baseSpawnTime * 2)/directorAggression);
                     } else{
                         await sleep(100/directorAggression);
                     }
