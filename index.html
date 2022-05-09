@@ -21,9 +21,10 @@
         let movingContactReduction = 1;
         let shotDelay = 400;
         let curseCircleSize = 70;
-        let curseCircleDamage = 0.1;
+        let curseCircleDamage = 0.02;
         let curseCircleSpeed = 3.5; 
         let overhaul = false;
+        let curseChance = 0.05;
         let bounceChance = 0;
         let bounceTimes = 0;
         let pierceChance = 0;
@@ -344,6 +345,8 @@
             constructor(id){
                 this.trackerID = id;
                 this.purchased = 0;
+                this.boxStyle = 'cyan';
+                this.boxGlowStyle = 'blue';
                 switch(id){
                     case 0:
                         this.nameColor = "white";
@@ -351,7 +354,9 @@
                         this.name = "Forged Bullets";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
-                        this.description = ["Increases your base damage by 1.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Increases your base damage by 1.", "Max Stacks: " + this.maxPurchases, "Purchased: " + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -381,7 +386,9 @@
                         this.name = "XP Osmosis";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
-                        this.description = ["Increase XP gain by 10%, additively.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Increases xp gain by 10%, additively.", "Max Stacks: " + this.maxPurchases, "Purchased: " + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -419,7 +426,9 @@
                         this.name = "Charged Weaponry";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
-                        this.description = ["Increase attack speed by 15%, multiplicatively.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Increase attack speed by 15%, multiplicatively.", "Max Stacks: " + this.maxPurchases, "Purchased: " + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -444,7 +453,9 @@
                         this.name = "Twin Thrusters";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
-                        this.description = ["Increases your base move speed by 1.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Increases your base move speed by 1.", "Max Stacks: " + this.maxPurchases, "Purchased: " + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -472,7 +483,9 @@
                         this.name = "Engineering Manual";
                         this.maxPurchases = 2;
                         this.baseCopies = 100;
-                        this.description = ["Every 5 levels, gain an additional skill point.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Every 5 levels, gain an additional skill point.", "Max Stacks: " + this.maxPurchases, "Purchased: " + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -496,7 +509,9 @@
                         this.name = "Bullet Boosters";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
-                        this.description = ["Increases your base bullet speed by 4.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Increases your base bullet speed by 4.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -522,7 +537,9 @@
                         this.name = "Death Bursts";
                         this.maxPurchases = 3;
                         this.baseCopies = 125;
-                        this.description = ["Upon killing an enemy, gain +50% attack speed for 0.75 second (+0.75 second per stack).", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Upon killing an enemy, gain +50% attack speed for 0.75 second (+0.75 second per stack).", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -566,7 +583,9 @@
                         this.name = "Shadow Bullets";
                         this.maxPurchases = 3;
                         this.baseCopies = 125;
-                        this.description = ["Adds a 7% chance to instantly fire a second bullet.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Adds a 7% chance to instantly fire a second bullet.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -591,7 +610,9 @@
                         this.name = "Strengthed Hull";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
-                        this.description = ["Increases your max hp by 10.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Increases your max hp by 10.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -615,7 +636,9 @@
                         this.name = "Pre-Emptive Repairs";
                         this.maxPurchases = 3;
                         this.baseCopies = 50;
-                        this.description = ["Restore 4 hp at the start of each wave.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Restore 4 hp at the start of each wave.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -641,7 +664,9 @@
                         this.name = "Titanium Exoskeleton";
                         this.maxPurchases = 4;
                         this.baseCopies = 125;
-                        this.description = ["Reduce contact damage taken by an additive 15%.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Reduce contact damage taken by an additive 15%.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -671,7 +696,9 @@
                         this.name = "Impact-Powered Repairs";
                         this.maxPurchases = 2;
                         this.baseCopies = 125;
-                        this.description = ["Upon taking contact damage, regenerate back 25% (+25% per stack) of the base damage over 4 seconds. Taking any damage during this regen effect will either reset or cancel the effect, depending on if it's physical or not.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Upon taking contact damage, regenerate back 25% (+25% per stack) of the base damage over 4 seconds. Taking any damage during this regen effect will either reset or cancel the effect, depending on if it's physical or not.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -706,7 +733,9 @@
                         this.name = "Friction Shielding";
                         this.maxPurchases = 2;
                         this.baseCopies = 100;
-                        this.description = ["Reduces contact damage and increases ramming damage dealt to enemies based on your move speed, provided you are moving.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Reduces contact damage and increases ramming damage dealt to enemies based on your move speed, provided you are moving.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -752,7 +781,9 @@
                         this.name = "Rash Engineering";
                         this.maxPurchases = 2;
                         this.baseCopies = 100;
-                        this.description = ["Reduces the time taken by the delayed healing upon contact damage by 1 second.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Reduces the time taken by the delayed healing upon contact damage by 1 second.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -778,7 +809,9 @@
                         this.name = "Repulsion Shielding";
                         this.maxPurchases = 4;
                         this.baseCopies = 80;
-                        this.description = ["Adds a base 10 damage to ramming and increases overall ramming damage by 10%, additively.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Adds a base 10 damage to ramming and increases overall ramming damage by 10%, additively.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -811,7 +844,9 @@
                         this.name = "Impact Reserves";
                         this.maxPurchases = 3;
                         this.baseCopies = 80;
-                        this.description = ["Every enemy you kill through ramming adds 0.5 (+0.5 per stack) to a counter. Taking damage from any non-contact damage source will remove 3 (+1 per stack) from the counter, but it will not go into negatives. At the end of the wave, heal equal to the counter amount.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Every enemy you kill through ramming adds 0.5 (+0.5 per stack) to a counter. Taking damage from any non-contact damage source will remove 3 (+1 per stack) from the counter, but it will not go into negatives. At the end of the wave, heal equal to the counter amount.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -854,7 +889,11 @@
                         this.name = "Agressor Model Overhaul";
                         this.maxPurchases = 1;
                         this.baseCopies = 100;
-                        this.description = ["Massively reduces your rate of fire and immunity frames when receiving contact damage. However, increases contact damage resistance by 10%, adds 100% ramming damage, reduces the time delayed contact healing takes by a further 0.5 seconds, and increases your move speed by 5.", "Purchasing an overhaul upgrade will lock you out from purchasing any other."];
+                        this.boxStyle = 'gold';
+                        this.boxGlowStyle = 'gold';
+                        this.description = function(){
+                            return ["Massively reduces your rate of fire and immunity frames when receiving contact damage. However, increases contact damage resistance by 10%, adds 100% ramming damage, reduces the time delayed contact healing takes by a further 0.5 seconds, and increases your move speed by 5.", "Purchasing an overhaul upgrade will lock you out from purchasing any other."];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -871,10 +910,6 @@
                             rammingIframes = 0.1;
                         }
                         this.icon = function(xoffset, yoffset, size){
-                            cx.lineWidth = 0.003 * size * ml;
-                            cx.strokeStyle = "gold";
-                            cx.shadowColor = "gold";
-                            cx.strokeRect(xoffset, yoffset, ml * 0.1 * size, ml * 0.1 * size);
                             cx.fillStyle = "black";
                             cx.shadowColor = "cyan";
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
@@ -901,7 +936,9 @@
                         this.name = "Rapid Power Diversion";
                         this.maxPurchases = 3;
                         this.baseCopies = 100;
-                        this.description = ["Heal for 0.25 (+0.25 per stack) hp per kill done with ramming damage.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Heal for 0.25 (+0.25 per stack) hp per kill done with ramming damage.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -951,7 +988,9 @@
                         this.name = "Chained Power Surge";
                         this.maxPurchases = 3;
                         this.baseCopies = 200;
-                        this.description = ["Killing an enemy with ramming damage less than 0.5 seconds after killing one previously increases the effectiveness of rapid power diversion by 50% (+50% per stack).", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Killing an enemy with ramming damage less than 0.5 seconds after killing one previously increases the effectiveness of rapid power diversion by 50% (+50% per stack).", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -990,7 +1029,9 @@
                         this.name = "Shielding Flow";
                         this.maxPurchases = 3;
                         this.baseCopies = 200;
-                        this.description = ["Killing an enemy with ramming damage temporarily makes you immune to contact damage for 0.2 (+0.2 per stack) seconds.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Killing an enemy with ramming damage temporarily makes you immune to contact damage for 0.2 (+0.2 per stack) seconds.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1027,7 +1068,9 @@
                         this.name = "In-Transit Restoration";
                         this.maxPurchases = 5;
                         this.baseCopies = 125;
-                        this.description = ["After not taking damage for 5 seconds, regen 1% (+1% per stack) of your max hp per second.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["After not taking damage for 5 seconds, regen 1% (+1% per stack) of your max hp per second.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1061,7 +1104,9 @@
                         this.name = "On-Site Tuneup";
                         this.maxPurchases = 3;
                         this.baseCopies = 125;
-                        this.description = ["Upon leveling up, heal for 10 (+8 per stack) hp.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Upon leveling up, heal for 10 (+8 per stack) hp.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1093,7 +1138,9 @@
                         this.name = "Accelerated Cannon";
                         this.maxPurchases = 3;
                         this.baseCopies = 125;
-                        this.description = ["Upon killing an enemy, fire a bullet that does 25% (+25% per stack) of your base damage at the nearest enemy.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Upon killing an enemy, fire a bullet that does 25% (+25% per stack) of your base damage at the nearest enemy.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1128,7 +1175,9 @@
                         this.name = "Precision Targeting";
                         this.maxPurchases = 5;
                         this.baseCopies = 100;
-                        this.description = ["Projectiles have a 10% (+10% per stack) chance to crit, dealing double damage.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Projectiles have a 10% (+10% per stack) chance to crit, dealing double damage.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1161,7 +1210,9 @@
                         this.name = "Growing Shot";
                         this.maxPurchases = 4;
                         this.baseCopies = 125;
-                        this.description = ["Projectiles grow in size and damage as they travel, up to +50% (+50% per stack) of their original damage.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Projectiles grow in size and damage as they travel, up to +50% (+50% per stack) of their original damage.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1186,7 +1237,9 @@
                         this.name = "Bouncy Bullets";
                         this.maxPurchases = 3;
                         this.baseCopies = 125;
-                        this.description = ["Projectiles have a 30% (+10% per stack) chance to be bouncy, causing them to bounce off walls 1 (+1 per stack) time(s).", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Projectiles have a 30% (+10% per stack) chance to be bouncy, causing them to bounce off walls 1 (+1 per stack) time(s).", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1214,7 +1267,9 @@
                         this.name = "Improved Materials";
                         this.maxPurchases = 5;
                         this.baseCopies = 125;
-                        this.description = ["Your projectiles last 0.2 seconds longer.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Your projectiles last 0.2 seconds longer.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1240,7 +1295,9 @@
                         this.name = "Fragmented Bullets";
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
-                        this.description = ["Bullets that hit an enemy split into 1 (+1 per stack) bullet(s) with 30% the damage of the original hit, and travel in a random direction. These fragments cannot create more fragments.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Bullets that hit an enemy split into 1 (+1 per stack) bullet(s) with 30% the damage of the original hit, and travel in a random direction. These fragments cannot create more fragments.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1265,7 +1322,9 @@
                         this.name = "Resilient Make";
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
-                        this.description = ["Bullets have a 15% (+15% per stack) to be resilient, meaning they will only be destroyed if the enemy they strike does not die. If they do kill an enemy, they will pierce through but lose damage equal to the hp of the enemy remaining when the bullet struck. Resets growing shot bonus.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Bullets have a 15% (+15% per stack) to be resilient, meaning they will only be destroyed if the enemy they strike does not die. If they do kill an enemy, they will pierce through but lose damage equal to the hp of the enemy remaining when the bullet struck. Resets growing shot bonus.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1293,7 +1352,9 @@
                         this.name = "Elastic Enhancements";
                         this.maxPurchases = 4;
                         this.baseCopies = 200;
-                        this.description = ["Bouncy bullets bounce one more time and all bullets last 0.1 seconds longer.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Bouncy bullets bounce one more time and all bullets last 0.1 seconds longer.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1317,7 +1378,9 @@
                         this.name = "Sharpened Fragments";
                         this.maxPurchases = 3;
                         this.baseCopies = 200;
-                        this.description = ["Fragment bullets now deal 40% (+10% per stack) of the damage the original hit dealt.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Fragment bullets now deal 40% (+10% per stack) of the damage the original hit dealt.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1348,7 +1411,9 @@
                         this.name = "Friction Bypass";
                         this.maxPurchases = 4;
                         this.baseCopies = 200;
-                        this.description = ["Resilient bullets lose 12.5% less damage, additively, per stack upon piercing.", "Max Stacks: " + this.maxPurchases];
+                        this.description = function(){
+                            return ["Resilient bullets lose 12.5% less damage, additively, per stack upon piercing.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1381,7 +1446,11 @@
                         this.name = "Cannon Model Overhaul";
                         this.maxPurchases = 1;
                         this.baseCopies = 100;
-                        this.description = ["Reduces your max hp by 35. In return, increases your chance to fire piercing and bouncing bullets by an additive 20%. Increases bullet duration by 1.2 seconds and increases the amount of fragment bullets fired by 2.", "Purchasing an overhaul upgrade will lock you out from purchasing any other."];
+                        this.boxStyle = 'gold';
+                        this.boxGlowStyle = 'gold';
+                        this.description = function(){
+                            return ["Reduces your max hp by 35. In return, increases your chance to fire piercing and bouncing bullets by an additive 20%. Increases bullet duration by 1.2 seconds and increases the amount of fragment bullets fired by 2.", "Purchasing an overhaul upgrade will lock you out from purchasing any other."];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1398,10 +1467,6 @@
                             overhaul = true;
                         }
                         this.icon = function(xoffset, yoffset, size){
-                            cx.lineWidth = 0.003 * size * ml;
-                            cx.strokeStyle = "gold";
-                            cx.shadowColor = "gold";
-                            cx.strokeRect(xoffset, yoffset, ml * 0.1 * size, ml * 0.1 * size);
                             cx.shadowColor = "cyan"
                             cx.fillStyle = "black"
                             cx.fillRect(xoffset, yoffset + 0.07 * size * ml, 0.1 * size * ml, 0.02 * size * ml)
@@ -1418,7 +1483,9 @@
                         this.name = "Miniature Shield Generator";
                         this.maxPurchases = 5;
                         this.baseCopies = 100;
-                        this.description = ["Gain 6 shield. When taking damage, shield is removed before hp. Shield regenerates to full over 3 seconds after not taking damage for 5 seconds, and is fully restored at the end of each round.", 'Max Stacks: ' + this.maxPurchases];
+                        this.description = function(){
+                            return ["Gain 6 shield. When taking damage, shield is removed before hp. Shield regenerates to full over 3 seconds after not taking damage for 5 seconds, and is fully restored at the end of each round.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1448,7 +1515,9 @@
                         this.name = "Energized Reactor";
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
-                        this.description = ["While you have shield, gain +15% (+15% per stack) attack speed.", 'Max Stacks: ' + this.maxPurchases];
+                        this.description = function(){
+                            return ["While you have shield, gain +15% (+15% per stack) attack speed.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1482,7 +1551,9 @@
                         this.name = "Precision Shadow Strike";
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
-                        this.description = ["Landing a critical hit has a 20% (+20% per stack) chance to instantly give you another shadow bullet charge.", 'Max Stacks: ' + this.maxPurchases];
+                        this.description = function(){
+                            return ["Landing a critical hit has a 20% (+20% per stack) chance to instantly give you another shadow bullet charge.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1519,7 +1590,9 @@
                         this.name = "Harnessed Impact";
                         this.maxPurchases = 4;
                         this.baseCopies = 150;
-                        this.description = ["If a shot deals 4x or more of your base damage, heal for 0.5 (+0.5 per stack) hp upon impact.", 'Max Stacks: ' + this.maxPurchases];
+                        this.description = function(){
+                            return ["If a shot deals 4x or more of your base damage, heal for 0.5 (+0.5 per stack) hp upon impact.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1556,7 +1629,9 @@
                         this.name = "Reactive Bullets";
                         this.maxPurchases = 5;
                         this.baseCopies = 180;
-                        this.description = ["Critical hits create a small aoe that lasts for 1 (+0.5 per stack) seconds and deals 100%  of your base damage per second.", 'Max Stacks: ' + this.maxPurchases];
+                        this.description = function(){
+                            return ["Critical hits create a small aoe that lasts for 1 (+0.5 per stack) seconds and deals 100%  of your base damage per second.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1591,7 +1666,9 @@
                         this.name = "Autonomous Targeting Matrix";
                         this.maxPurchases = 5;
                         this.baseCopies = 180;
-                        this.description = ["Gain 5% crit chance and 15% critical damage.", 'Max Stacks: ' + this.maxPurchases];
+                        this.description = function(){
+                            return ["Gain 5% crit chance and 15% critical damage.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1630,7 +1707,9 @@
                         this.name = "Desperation Overcharge";
                         this.maxPurchases = 3;
                         this.baseCopies = 180;
-                        this.description = ["When your shield breaks, spawn an aoe around you that deals 150% (+150% per stack) of your base damage and lasts for 5 seconds.", 'Max Stacks: ' + this.maxPurchases];
+                        this.description = function(){
+                            return ["When your shield breaks, spawn an aoe around you that deals 150% (+150% per stack) of your base damage and lasts for 5 seconds.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
                         this.copies = function(){
                             return this.baseCopies;
                         }
@@ -1663,23 +1742,28 @@
                         this.nameGlowColor = "red";
                         this.name = "Elemental Powered Gatling";
                         this.maxPurchases = 1;
-                        this.baseCopies = 3;
-                        this.description = ["Forbidden Upgrade", "Doubles your attack speed, but halves all damage you deal, regardless of type."];
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Doubles your attack speed, but halves all damage you deal, regardless of type."];
+                        }
                         this.copies = function(){
-                            return this.baseCopies;
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
                         }
                         this.requirements = function(){
                             return true;
                         }
                         this.buy = function(){
                             shotDelay *= 0.5;
+                            curseChance *= 0.5;
                             playerDamageMulti *= 0.5;
                         }
                         this.icon = function(xoffset, yoffset, size){
-                            cx.lineWidth = 0.003 * size * ml;
-                            cx.strokeStyle = "red";
-                            cx.shadowColor = "red";
-                            cx.strokeRect(xoffset, yoffset, ml * 0.1 * size, ml * 0.1 * size);
                             cx.strokeStyle = "white";
                             cx.shadowColor = "white";
                             cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.01 * size, ml * 0.05 * size);
@@ -1697,28 +1781,33 @@
                     case 41:
                         this.nameColor = "white";
                         this.nameGlowColor = "red";
-                        this.name = "Curse of Wisdom";
+                        this.name = "Cursed Idol";
                         this.maxPurchases = 1;
-                        this.baseCopies = 3;
-                        this.description = ["Forbidden Upgrade", "Doubles your xp gain, but you shall anger the deities who control the knowledge."];
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.baseCopies = Infinity;
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Doubles your xp gain, but you shall anger the deities who control the knowledge."];
+                        }
                         this.copies = function(){
-                            return this.baseCopies;
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
                         }
                         this.requirements = function(){
                             return true;
                         }
                         this.buy = function(){
                             multiplicativeXpGain *= 2;
+                            curseChance *= 0.5;
                             skillIDCounter++;
                             aoes.push(new circlecomponent(0, 0, curseCircleSize, ml/1000, 'lime', 'lime'));
                             areass.push(new areasSideStats(0, curseCircleDamage, 0, 'Curse', false, false));
                             aoeTrackerID.push(skillIDCounter);
                         }
                         this.icon = function(xoffset, yoffset, size){
-                            cx.lineWidth = 0.003 * size * ml;
-                            cx.strokeStyle = "red";
-                            cx.shadowColor = "red";
-                            cx.strokeRect(xoffset, yoffset, ml * 0.1 * size, ml * 0.1 * size);
                             cx.strokeStyle = "lime";
                             cx.shadowColor = "blue";
                             cx.beginPath();
@@ -1742,23 +1831,28 @@
                         this.nameGlowColor = "red";
                         this.name = "Glass Mainframe";
                         this.maxPurchases = 1;
-                        this.baseCopies = 3;
-                        this.description = ["Forbidden Upgrade", "Doubles all damage you deal and receive."];
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Doubles all damage you deal and receive."];
+                        }
                         this.copies = function(){
-                            return this.baseCopies;
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
                         }
                         this.requirements = function(){
                             return true;
                         }
                         this.buy = function(){
                             damageReduction *= 2;
+                            curseChance *= 0.5;
                             playerDamageMulti *= 2;
                         }
                         this.icon = function(xoffset, yoffset, size){
-                            cx.lineWidth = 0.003 * size * ml;
-                            cx.strokeStyle = "red";
-                            cx.shadowColor = "red";
-                            cx.strokeRect(xoffset, yoffset, ml * 0.1 * size, ml * 0.1 * size);
                             cx.strokeStyle = "white";
                             cx.shadowColor = "white";
                             cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
@@ -2057,21 +2151,27 @@
         function itemRoll(){
             availableItemList.length = 0;
             offeredItems.length = 0;
+            let totalWeight = 0
             for(let i = 0; i < totalItemList.length; i++){
-                if(totalItemList[i].requirements() && totalItemList[i].purchased < totalItemList[i].maxPurchases){
-                    for(let t = 0; t < totalItemList[i].copies(); t++){
-                        availableItemList.push(totalItemList[i]);
-                    }
+                if(totalItemList[i].requirements() && totalItemList[i].purchased < totalItemList[i].maxPurchases && totalItemList[i].copies() > 0){
+                    availableItemList.push(totalItemList[i]);
+                    totalWeight += totalItemList[i].copies()
                 }
             }
             for(let i = 0; i < 4; i++){
-                let choice = availableItemList[randomInt(0, availableItemList.length - 1)];
-                offeredItems.push(choice);
+                let choice = randomInt(0, totalWeight);
+                let choiceTracker = 0;
                 for(let t = 0; t < availableItemList.length; t++){
-                    if(availableItemList[t] === choice){
+                    if(choice > choiceTracker && choice <= choiceTracker + availableItemList[t].baseCopies){
+                        offeredItems.push(availableItemList[t]);
                         availableItemList.splice(t, 1);
-                        t--;
+                        totalWeight = 0;
+                        for(let g = 0; g < availableItemList.length; g++){
+                            totalWeight += availableItemList[g].baseCopies;
+                        }
+                        break;
                     }
+                    choiceTracker += availableItemList[t].copies();
                 }
             }
         }
@@ -2237,7 +2337,11 @@
                         }
                     } else{
                         if(distanceCalc(aoes[i].x, aoes[i].y, character.x, character.y) - ml/2000 * character.width < ml/1000 * aoes[i].r){
-                            damagePlayer(areass[i].damage, "DOT");
+                            if (areass[i].eoti == 'Curse'){
+                                damagePlayer(areass[i].damage * maxHealth/50, "DOT");
+                            } else{
+                                damagePlayer(areass[i].damage, "DOT");
+                            }
                             if(areass[i].damageconsume == true){
                                 aoeDestroy(i);
                                 continue aoerunner;
@@ -2433,23 +2537,25 @@
         }
         function damagePlayer(damage, damageType){
             damageTime = 0;
-            let damagedealt = 0
+            let damagedealt = damage * damageReduction * globalEnemyDamage
             switch(damageType){
                 case "DOT":
-                    damagedealt = damage * globalEnemyDamage * damageReduction * dotDamageReduction;
+                    damagedealt *= dotDamageReduction;
                     currentDCH = 0;
                     storedDCH = 0;
                     storedRammingHP += -rammingLosses;
                     break;
                 case "Projectile":
-                    damagedealt = damage * globalEnemyDamage * damageReduction * projectileDamageReduction;
+                    damagedealt *= projectileDamageReduction;
                     currentDCH = 0;
                     storedDCH = 0;
                     storedRammingHP += -rammingLosses;
                     break;
                 case "Contact": 
-                    if(killTime > rammingImmunityTime * 50 || lastKillType !== "Ramming"){
-                        damagedealt = damage * globalEnemyDamage * damageReduction * contactDamageReduction * movingContactReduction;
+                    if(killTime < rammingImmunityTime * 50 || lastKillType !== "Ramming"){
+                        damagedealt = 0;
+                    } else{
+                        damagedealt *= contactDamageReduction * movingContactReduction
                     }
                     currentDCH = damage * delayedContactHealing * globalEnemyDamage;
                     storedDCH = currentDCH;
@@ -2591,8 +2697,12 @@
             heal(levelRegen);
             skillPoints++;
             level++;
-            health += 3;
-            maxHealth += 3;
+            if(health == maxHealth){
+                health += maxHpPerLevel;
+                maxHealth += maxHpPerLevel;
+            } else{
+                heal(maxHpPerLevel);
+            }
             if(level % 5 == 0){
                 skillPoints += additionalSkillPoints;
             }
@@ -2980,8 +3090,8 @@
                     if(i % mlhr == 0 && i != 0){
                         tempxoffset++;
                     }
-                    cx.shadowColor = "blue";
-                    cx.strokeStyle = "cyan";
+                    cx.shadowColor = purchasedItems[i].boxGlowStyle;
+                    cx.strokeStyle = purchasedItems[i].boxStyle;
                     cx.lineWidth = ml/1000;
                     cx.strokeRect(ml/40 * tempxoffset, ml/40 * (i - tempxoffset * mlhr) + ml/100, ml * 0.02, ml * 0.02);
                     purchasedItems[i].icon(ml/40 * tempxoffset, ml/40 * (i - tempxoffset * mlhr) + ml/100, 0.2);
@@ -3004,12 +3114,38 @@
                 cx.strokeStyle = "darkslateblue";
                 cx.shadowColor = "cyan";
                 cx.strokeRect(c.width * 0.7, c.height * 0.05, c.width * 0.25, c.height * 0.9);
-                cx.shadowColor = "blue";
-                cx.strokeStyle = "cyan";
                 cx.lineWidth = ml/1000;
+                if (offeredItems[0] !== undefined){
+                    cx.shadowColor = offeredItems[0].boxGlowStyle;
+                    cx.strokeStyle = offeredItems[0].boxStyle;
+                } else{
+                    cx.shadowColor = 'blue';
+                    cx.strokeStyle = 'cyan'
+                }
                 cx.strokeRect(c.width * 0.45 - ml * 0.1, c.height * 0.3, ml * 0.1, ml * 0.1);
+                if (offeredItems[1] !== undefined){
+                    cx.shadowColor = offeredItems[1].boxGlowStyle;
+                    cx.strokeStyle = offeredItems[1].boxStyle;
+                } else{
+                    cx.shadowColor = 'blue';
+                    cx.strokeStyle = 'cyan'
+                }
                 cx.strokeRect(c.width * 0.55, c.height * 0.3, ml * 0.1, ml * 0.1);
+                if (offeredItems[2] !== undefined){
+                    cx.shadowColor = offeredItems[2].boxGlowStyle;
+                    cx.strokeStyle = offeredItems[2].boxStyle;
+                } else{
+                    cx.shadowColor = 'blue';
+                    cx.strokeStyle = 'cyan'
+                }
                 cx.strokeRect(c.width * 0.45 - ml * 0.1, c.height * 0.6, ml * 0.1, ml * 0.1);
+                if (offeredItems[3] !== undefined){
+                    cx.shadowColor = offeredItems[3].boxGlowStyle;
+                    cx.strokeStyle = offeredItems[3].boxStyle;
+                } else{
+                    cx.shadowColor = 'blue';
+                    cx.strokeStyle = 'cyan'
+                }
                 cx.strokeRect(c.width * 0.55, c.height * 0.6, ml * 0.1, ml * 0.1);
                 for(let i = 0; i < 4; i++){
                     if(offeredItems[i] !== undefined){
@@ -3111,12 +3247,13 @@
             cx.shadowColor = "cyan";
             let offset = 0;
             let cycles = 0;
-            for(let t = 0; t < target.description.length; t++){
+            let description = target.description()
+            for(let t = 0; t < description.length; t++){
                 offset = 0;
-                for(let i = 0; i <= target.description[t].length; i++){
-                    if(target.description[t].charAt(i) == " " && i - offset > 25 || i == target.description[t].length){
+                for(let i = 0; i <= description[t].length; i++){
+                    if(description[t].charAt(i) == " " && i - offset > 25 || i == description[t].length){
                         cycles++;
-                        cx.strokeText(target.description[t].substr(offset, i - offset), c.width * 0.825, c.height * (0.12 + 0.05 * cycles));
+                        cx.strokeText(description[t].substr(offset, i - offset), c.width * 0.825, c.height * (0.12 + 0.05 * cycles));
                         offset = i;
                     }
                 }
