@@ -19,14 +19,17 @@
         let playerSpeed = 5;
         let playerProjectiles = 1;
         let moving = false;
+        let selfBulletDamage = false;
         let shotSpread = 0;
         let movingRamMulti = 1;
         let movingContactReduction = 1;
         let shotDelay = 400;
         let curseCircleSize = 70;
-        let curseCircleSpeed = 0.8; 
+        let curseCircleSpeed = 0.9; 
+        let globalLifeSteal = 0;
+        let healthDegrade = 0;
         let overhaul = false;
-        let curseChance = 0.015;
+        let curseChance = 0.005;
         let curseChanceLoss = 0.5;
         let bounceChance = 0;
         let bounceTimes = 0;
@@ -37,6 +40,7 @@
         let fragmentDamage = 0.3;
         let recursiveFragments = false; //DO NOT ENABLE THIS THIS IS DEATH IT WILL LITERALLY CRASH CHROME DO NOT DO NOT DO NOT
         let bulletDuration = 30;
+        let bulletDurationMulti = 1;
         let bulletSpeed = 20;
         let level = 1;
         let playerDamage = 5;
@@ -145,8 +149,6 @@
         let minCost;
         let bulletCounter = 0;
         let playerBuffs;
-        let demonstrationMode = false;
-        let win = false;
         let inspecting = 0;
         let inspectingTarget = 0;
         var markedBullets = [];
@@ -569,7 +571,7 @@
                             cx.fillStyle = "gray";
                             cx.shadowColor = "red";
                             cx.fillRect(xoffset + ml * 0.03 * size, yoffset + ml * 0.03 * size, ml * 0.04 * size, ml * 0.04 * size);
-                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.lineWidth = ml * 0.0015;
                             cx.strokeStyle = "cyan";
                             cx.shadowColor = "white";
                             cx.beginPath();
@@ -696,7 +698,7 @@
                             cx.fillStyle = "white";
                             cx.shadowColor = "cyan";
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
-                            cx.lineWidth = ml * 0.002 * size;
+                            cx.lineWidth = ml * 0.002;
                             cx.strokeStyle = "gray";
                             cx.shadowColor = "darkgray";
                             cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.025 * size, ml * 0.025 * size);
@@ -730,7 +732,7 @@
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
                             cx.strokeStyle = "lime";
                             cx.shadowColor = "lime";
-                            cx.lineWidth = ml * 0.001 * size;
+                            cx.lineWidth = ml * 0.001;
                             cx.beginPath();
                             cx.arc(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size, ml * 0.04 * size, Math.PI * 0.25, Math.PI * 1.75);
                             cx.stroke();
@@ -767,7 +769,7 @@
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
                             cx.strokeStyle = "gray";
                             cx.shadowColor = "gray";
-                            cx.lineWidth = ml * 0.002 * size;
+                            cx.lineWidth = ml * 0.002;
                             cx.beginPath();
                             cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.05 * size);
                             cx.lineTo(xoffset, yoffset + ml * 0.05 * size);
@@ -778,7 +780,7 @@
                             cx.stroke();
                             cx.strokeStyle = "cyan";
                             cx.shadowColor = "cyan";
-                            cx.lineWidth = ml * 0.001 * size;
+                            cx.lineWidth = ml * 0.001;
                             cx.beginPath();
                             cx.arc(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size, ml * 0.04 * size, Math.PI * 0.25, Math.PI * 1.75);
                             cx.stroke();
@@ -844,7 +846,7 @@
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
                             cx.strokeStyle = "gray";
                             cx.shadowColor = "darkgray";
-                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.lineWidth = ml * 0.0015;
                             cx.beginPath();
                             cx.arc(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size, ml * 0.04 * size, 0, Math.PI * 2);
                             cx.stroke();
@@ -886,7 +888,7 @@
                             cx.fillRect(xoffset + ml * 0.09 * size, yoffset + ml * 0.025 * size, ml * 0.01 * size, ml * 0.05 * size);
                             cx.strokeStyle = "lime";
                             cx.shadowColor = "lime";
-                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.lineWidth = ml * 0.0015;
                             cx.beginPath();
                             cx.arc(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size, ml * 0.02 * size, 0, Math.PI * 2);
                             cx.stroke();
@@ -930,7 +932,7 @@
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
                             cx.strokeStyle = "black";
                             cx.shadowColor = "cyan";
-                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.lineWidth = ml * 0.0015;
                             cx.beginPath();
                             cx.arc(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size, ml * 0.005 * size, 0, Math.PI * 2);
                             cx.stroke();
@@ -968,7 +970,7 @@
                             cx.fillStyle = "white";
                             cx.shadowColor = "cyan";
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
-                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.lineWidth = ml * 0.0015;
                             cx.strokeStyle = "red";
                             cx.shadowColor = "red";
                             cx.beginPath();
@@ -1020,7 +1022,7 @@
                             cx.fillStyle = "white";
                             cx.shadowColor = "cyan";
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
-                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.lineWidth = ml * 0.0015;
                             cx.strokeStyle = "red";
                             cx.shadowColor = "red";
                             cx.beginPath();
@@ -1061,7 +1063,7 @@
                             cx.fillStyle = "white";
                             cx.shadowColor = "cyan";
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
-                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.lineWidth = ml * 0.0015;
                             cx.strokeStyle = "red";
                             cx.shadowColor = "red";
                             cx.beginPath();
@@ -1102,7 +1104,7 @@
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
                             cx.strokeStyle = "lime";
                             cx.shadowColor = "lime";
-                            cx.lineWidth = ml * 0.002 * size;
+                            cx.lineWidth = ml * 0.002;
                             cx.beginPath();
                             cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.05 * size);
                             cx.lineTo(xoffset, yoffset + ml * 0.05 * size);
@@ -1173,7 +1175,7 @@
                             cx.fillStyle = "cyan";
                             cx.fillRect(xoffset + ml * 0.065 * size, yoffset + ml * 0.04 * size, ml * 0.01 * size, ml * 0.02 * size);
                             cx.strokeStyle = "cyan";
-                            cx.lineWidth = ml * 0.002 * size;
+                            cx.lineWidth = ml * 0.002;
                             cx.beginPath();
                             cx.moveTo(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size);
                             cx.lineTo(xoffset + ml * 0.05 * size, yoffset);
@@ -1411,7 +1413,7 @@
                             cx.shadowColor = "cyan";
                             cx.fillRect(xoffset + ml * 0.035 * size, yoffset + ml * 0.035 * size, ml * 0.03 * size, ml * 0.03 * size);
                             cx.strokeStyle = "white";
-                            cx.lineWidth = ml/500 * size;
+                            cx.lineWidth = ml/500;
                             cx.beginPath();
                             cx.moveTo(xoffset + ml * 0.035 * size, yoffset + ml * 0.035 * size);
                             cx.lineTo(xoffset + ml * 0.05  * size, yoffset + ml * 0.02 * size);
@@ -1444,7 +1446,7 @@
                             cx.shadowColor = "cyan";
                             cx.fillRect(xoffset + ml * 0.035 * size, yoffset + ml * 0.035 * size, ml * 0.03 * size, ml * 0.03 * size);
                             cx.strokeStyle = "gray";
-                            cx.lineWidth = ml/500 * size;
+                            cx.lineWidth = ml/500;
                             cx.beginPath();
                             cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.035 * size);
                             cx.lineTo(xoffset + ml * 0.03 * size, yoffset + ml * 0.09 * size);
@@ -1515,7 +1517,7 @@
                             cx.fillStyle = "white";
                             cx.shadowColor = "cyan";
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
-                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.lineWidth = ml * 0.0015;
                             cx.strokeStyle = "blue";
                             cx.shadowColor = "blue";
                             cx.beginPath();
@@ -1546,7 +1548,7 @@
                             cx.fillStyle = "white";
                             cx.shadowColor = "cyan";
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
-                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.lineWidth = ml * 0.0015;
                             cx.strokeStyle = "blue";
                             cx.shadowColor = "blue";
                             cx.beginPath();
@@ -1566,7 +1568,7 @@
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
                         this.description = function(){
-                            return ["Landing a critical hit has a 20% (+20% per stack) chance to instantly give you another shadow bullet charge.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Landing a critical hit has a 10% (+5% per stack) chance to instantly give you another shadow bullet charge.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -1575,7 +1577,11 @@
                             return totalItemList[23].purchased >= 3 && totalItemList[7].purchased >= 1;
                         }
                         this.buy = function(){
-                            critShadowChance += 0.2;
+                            if(this.purchased == 0){
+                                critShadowChance += 0.1;
+                            } else{
+                                critShadowChance += 0.05;
+                            }
                             this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -1626,7 +1632,7 @@
                             cx.fillRect(xoffset + ml * 0.09 * size, yoffset + ml * 0.025 * size, ml * 0.01 * size, ml * 0.05 * size);
                             cx.strokeStyle = "gray";
                             cx.shadowColor = "gray";
-                            cx.lineWidth = ml * 0.002 * size;
+                            cx.lineWidth = ml * 0.002;
                             cx.beginPath();
                             cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.05 * size);
                             cx.lineTo(xoffset, yoffset + ml * 0.05 * size);
@@ -1697,7 +1703,7 @@
                         this.icon = function(xoffset, yoffset, size){
                             cx.strokeStyle = "cyan";
                             cx.shadowColor = "cyan";
-                            cx.lineWidth = ml * 0.003 * size
+                            cx.lineWidth = ml * 0.003 * size;
                             cx.strokeRect(xoffset + ml * 0.03 * size, yoffset + ml * 0.03 * size, ml * 0.04 * size, ml * 0.04 * size);
                             cx.beginPath();
                             cx.moveTo(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size);
@@ -1738,7 +1744,7 @@
                             cx.fillStyle = "white";
                             cx.shadowColor = "cyan";
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
-                            cx.lineWidth = ml * 0.0015 * size;
+                            cx.lineWidth = ml * 0.0015;
                             cx.strokeStyle = "blue";
                             cx.shadowColor = "blue";
                             cx.beginPath();
@@ -1870,6 +1876,253 @@
                             cx.strokeStyle = "white";
                             cx.shadowColor = "white";
                             cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                        }
+                        break;
+                    case 43:
+                        this.nameColor = "white";
+                        this.nameGlowColor = "red";
+                        this.name = "Hungering Bullets";
+                        this.maxPurchases = 1;
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "All bullets are bouncy. Gain 4 bounces and bullets last 1.5 second longer. However, your own bullets can now hit you. Self damage dealt by bullets is affected by the global enemy damage scaling."];
+                        }
+                        this.copies = function(){
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            selfBulletDamage = true;
+                            bounceChance = 1;
+                            bounceTimes += 4;
+                            bulletDuration += 75;
+                            curseChance *= curseChanceLoss;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.lineWidth = ml * 0.001;
+                            cx.strokeStyle = "red";
+                            cx.shadowColor = "red";
+                            cx.beginPath();
+                            cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size);
+                            let teeth = 8;
+                            for(let i = 1; i < teeth + 1; i++){
+                                if(i % 2 != 0){
+                                    cx.lineTo(xoffset + ml * (0.025 + 0.05/teeth * i) * size, yoffset + ml * 0.075 * size);
+                                } else{
+                                    cx.lineTo(xoffset + ml * (0.025 + 0.05/teeth * i)  * size, yoffset + ml * 0.025 * size);
+                                }
+                            }
+                            cx.stroke()
+                            cx.strokeStyle = "blue";
+                            cx.shadowColor = "blue";
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                        }
+                        break;
+                    case 44:
+                        this.nameColor = "white";
+                        this.nameGlowColor = "red";
+                        this.name = "Goliath Form";
+                        this.maxPurchases = 1;
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Increase your damage and size by 1.5 times."];
+                        }
+                        this.copies = function(){
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            playerSize *= 1.5;
+                            character.width = playerSize;
+                            character.height = playerSize;
+                            playerDamageMulti *= 1.5;
+                            curseChance *= curseChanceLoss;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.015 * size, yoffset + ml * 0.015 * size, ml * 0.07 * size, ml * 0.07 * size);
+                            cx.lineWidth = ml * 0.0015;
+                            cx.strokeStyle = 'red';
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);                            cx.shadowColor = 'red';
+                            cx.strokeRect(xoffset + ml * 0.035 * size, yoffset + ml * 0.035 * size, ml * 0.03 * size, ml * 0.03 * size);
+                        }
+                        break;
+                    case 45:
+                        this.nameColor = "white";
+                        this.nameGlowColor = "red";
+                        this.name = "Ant Form";
+                        this.maxPurchases = 1;
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Reduce your size by 33% but reduce your damage by half."];
+                        }
+                        this.copies = function(){
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            playerSize /= 1.5;
+                            character.width = playerSize;
+                            character.height = playerSize;
+                            playerDamageMulti *= 0.5;
+                            curseChance *= curseChanceLoss;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.035 * size, yoffset + ml * 0.035 * size, ml * 0.03 * size, ml * 0.03 * size);
+                            cx.lineWidth = ml * 0.0015;
+                            cx.strokeStyle = 'red';
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);                            cx.shadowColor = 'red';
+                            cx.strokeRect(xoffset + ml * 0.015 * size, yoffset + ml * 0.015 * size, ml * 0.07 * size, ml * 0.07 * size);
+                        }
+                        break;
+                    case 46:
+                        this.nameColor = "white";
+                        this.nameGlowColor = "red";
+                        this.name = "Unstoppable Virus";
+                        this.maxPurchases = 1;
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Reduces the rate at which enemies grow stronger per wave, but increase the rate at which the xp requirement for levels grows. Only effects waves and levels after this upgrade."];
+                        }
+                        this.copies = function(){
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            xpGrowth += 0.04;
+                            enemyHpScaling -= 0.04;
+                            enemyDamageScaling -= 0.01;
+                            curseChance *= curseChanceLoss;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "red";
+                            cx.shadowColor = "red";
+                            cx.fillRect(xoffset + ml * 0.035 * size, yoffset + ml * 0.035 * size, ml * 0.03 * size, ml * 0.03 * size);
+                            cx.strokeStyle = "black";
+                            cx.lineWidth = ml/500;
+                            cx.beginPath();
+                            cx.moveTo(xoffset + ml * 0.035 * size, yoffset + ml * 0.035 * size);
+                            cx.lineTo(xoffset + ml * 0.01  * size, yoffset + ml * 0.05 * size);
+                            cx.moveTo(xoffset + ml * 0.035 * size, yoffset + ml * 0.065 * size);
+                            cx.lineTo(xoffset + ml * 0.01  * size, yoffset + ml * 0.05 * size);
+                            cx.moveTo(xoffset + ml * 0.035 * size, yoffset + ml * 0.035 * size);
+                            cx.lineTo(xoffset + ml * 0.02  * size, yoffset + ml * 0.05 * size);
+                            cx.moveTo(xoffset + ml * 0.035 * size, yoffset + ml * 0.065 * size);
+                            cx.lineTo(xoffset + ml * 0.02  * size, yoffset + ml * 0.05 * size);
+                            cx.moveTo(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size);
+                            cx.lineTo(xoffset + ml * 0.01  * size, yoffset + ml * 0.05 * size);
+                            cx.stroke();
+                        }
+                        break;
+                    case 47:
+                        this.nameColor = "white";
+                        this.nameGlowColor = "red";
+                        this.name = "Doom Module";
+                        this.maxPurchases = 1;
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Gain 5 projectiles. Increase your shot spread by 15 degrees. Reduce your bullet lifetime by 66%. Reduce your damage by 33%."];
+                        }
+                        this.copies = function(){
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            playerProjectiles += 5;
+                            bulletDurationMulti /= 3;
+                            shotSpread += 15;
+                            playerDamageMulti /= 1.5;
+                            curseChance *= curseChanceLoss;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = 'gray';
+                            cx.shadowColor = 'cyan';
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.fillStyle = 'green';
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.02 * size);
+                            cx.fillStyle = 'red';
+                            cx.fillRect(xoffset + ml * 0.03 * size, yoffset + ml * 0.035 * size, ml * 0.015 * size, ml * 0.015 * size);
+                            cx.fillRect(xoffset + ml * 0.055 * size, yoffset + ml * 0.035 * size, ml * 0.015 * size, ml * 0.015 * size);
+                        }
+                        break;
+                    case 48:
+                        this.nameColor = "white";
+                        this.nameGlowColor = "red";
+                        this.name = "Parasite Module";
+                        this.maxPurchases = 1;
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Your health constantly degrades at a rate of 2% of your max hp per second. Hitting enemies now heals you for 2 health."];
+                        }
+                        this.copies = function(){
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            globalLifeSteal += 2;
+                            healthDegrade += 0.02;
+                            curseChance *= curseChanceLoss;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = 'white';
+                            cx.shadowColor = 'cyan';
+                            cx.fillRect(xoffset, yoffset + ml * 0.075 * size, ml * 0.1 * size, ml * 0.025 * size);
+                            cx.fillStyle = 'pink';
+                            cx.shadowColor = 'red';
+                            cx.fillRect(xoffset + ml * 0.04 * size, yoffset + ml * 0.015 * size, ml * 0.02 * size, ml * 0.05 * size);
+                            cx.fillRect(xoffset + ml * 0.035 * size, yoffset + ml * 0.065 * size, ml * 0.01 * size, ml * 0.02 * size);
+                            cx.fillRect(xoffset + ml * 0.055 * size, yoffset + ml * 0.065 * size, ml * 0.01 * size, ml * 0.02 * size);
                         }
                         break;
                     default:
@@ -2249,6 +2502,14 @@
         resize();
         var gameRunner = setInterval(function generalUpdate(){
             if(pause == false){
+                if(health <= 0){
+                    gameOver = true;
+                    health = 0;
+                    window.clearInterval(gameRunner)
+                    render();
+                } else{
+                    health -= maxHealth * healthDegrade/50;
+                }
                 killTime++;
                 damageTime++;
                 if(damageTime >= regenDelay * 50 && waveActive == true){
@@ -2291,6 +2552,7 @@
                                 heal(rammingKillSteal)
                             }
                         }
+                        heal(globalLifeSteal);
                         killChecker(i, "Ramming");
                         break;
                     }
@@ -2448,7 +2710,8 @@
                             }
                         }
                         sideHandler(i, bullets[i].width);
-                    } else {
+                    }
+                    if(bss[i].owner == 'Enemy' || selfBulletDamage == true){
                         bullets[i].x += bss[i].speed * ml/1000 * bss[i].xmom;
                         bullets[i].y += bss[i].speed * ml/1000 * bss[i].ymom;
                         if(squareHitDetector(character.x, character.y, ml/2000 * character.width, ml/2000 * character.height, bullets[i].x, bullets[i].y, ml/2000 * bullets[i].width, ml/2000 * bullets[i].height) == true && invulnerable == false){
@@ -2506,6 +2769,7 @@
             }
         }
         function onHitEffects(damage, enemyid, bulletid){
+            heal(globalLifeSteal)
             if(fragmentBullets != 0 && bullProperties[bulletid].fragmenting == true){
                 for(let i = 0; i < fragmentBullets; i++){
                     let aimX = Math.random();
@@ -2524,7 +2788,7 @@
                     if(Math.random() < pierceChance){
                         piercing = true;
                     }
-                    bss.push(new bulletSideStats(aimX, aimY, damage * fragmentDamage, bulletSpeed, bulletDuration, "Player"));
+                    bss.push(new bulletSideStats(aimX, aimY, damage * fragmentDamage, bulletSpeed, bulletDuration * bulletDurationMulti, "Player"));
                     bullets.push(new squarecomponent(bulletSize, bulletSize, enemies[enemyid].x, enemies[enemyid].y, "white", "cyan"));
                     bullProperties.push(new bulletProperties(looperBullets, bouncy, bounceTimes, recursiveFragments, piercing));
                     bulletTrackerID.push(bulletCounter);
@@ -2617,11 +2881,6 @@
                         iframeCycler(projectileIframes);
                     }
                 }
-            } else{
-                gameOver = true;
-                health = 0;
-                window.clearInterval(gameRunner)
-                render();
             }
         }
         function shieldBreakEffects(){
@@ -2671,7 +2930,7 @@
                 aimx = Math.sin(shotAngle/180 * Math.PI)
                 aimy = Math.cos(shotAngle/180 * Math.PI)
             }
-            bss.push(new bulletSideStats(aimx, aimy, playerDamage * damagemulti, bulletSpeed, bulletDuration, "Player"));
+            bss.push(new bulletSideStats(aimx, aimy, playerDamage * damagemulti, bulletSpeed, bulletDuration * bulletDurationMulti, "Player"));
             bullets.push(new squarecomponent(bulletSize, bulletSize, character.x, character.y, "white", "cyan"));
             bullProperties.push(new bulletProperties(looperBullets, bouncy, bounceTimes, true, piercing));
             bulletTrackerID.push(bulletCounter);
@@ -2706,22 +2965,17 @@
                 onKillEffects()
                 killTime = 0;
                 if(enemyCount == 0 && spawnFinish == true){
-                    if(demonstrationMode == true){
-                        damagePlayer(maxHealth);
-                        win = true;
-                    } else{
-                        waveActive = false;
-                        shield = maxShield
-                        enemyWaveCounter = 0;
-                        heal(storedRammingHP);
-                        storedRammingHP = 0;
-                        bulletCounter = 0;
-                        bullets.length = 0;
-                        bss.length = 0;
-                        bulletTrackerID.length = 0;
-                        bullProperties.length = 0;
-                        director();
-                    }
+                    waveActive = false;
+                    shield = maxShield
+                    enemyWaveCounter = 0;
+                    heal(storedRammingHP);
+                    storedRammingHP = 0;
+                    bulletCounter = 0;
+                    bullets.length = 0;
+                    bss.length = 0;
+                    bulletTrackerID.length = 0;
+                    bullProperties.length = 0;
+                    director();
                 }
             }
         }
@@ -3118,9 +3372,9 @@
                 cx.strokeText(skillPoints + " Unspent Point(s) Remaining", c.width/2, c.height * 0.95);
                 cx.globalAlpha = standardAlpha;
             }
-            if(pause == true){
-                let tempxoffset = 0;
+            function inventory(){
                 cx.globalAlpha = 1;
+                let tempxoffset = 0;
                 for (let i = 0; i < purchasedItems.length; i++){
                     if(i % mlhr == 0 && i != 0){
                         tempxoffset++;
@@ -3146,6 +3400,10 @@
                         cx.strokeText("X" + target.purchased, xpos + ml * 0.02, ypos + ml * 0.005);
                     }
                 }
+            }
+            if(pause == true){
+                cx.globalAlpha = 1;
+                inventory()
                 cx.shadowColor = "blue";
                 cx.strokeStyle = "white";
                 cx.font = ml/30 + "px Arial";
@@ -3269,19 +3527,17 @@
                 }
             }
             if(gameOver == true){
+                inventory();
+                cx.strokeStyle = "white";
                 cx.shadowColor = "cyan";
                 cx.font = ml/10 + "px Arial";
                 cx.lineWidth = ml/400;
-                if(win == true){
-                    cx.strokeText('End of Demo, Again', c.width/2, c.height * 0.3)
-                } else{
-                    cx.strokeText('Game Over', c.width/2, c.height * 0.3);
-                }
+                cx.strokeText('Game Over', c.width/2, c.height * 0.3);
                 cx.font = ml/30 + 'px Arial';
                 cx.lineWidth = ml/1200;
-                cx.strokeText('Enemies Killed: ' + kills, c.width/2, c.height * 0.4)
-                cx.strokeText('Total XP Gained: ' + parseFloat(totalXP.toFixed(1)), c.width/2, c.height * 0.48)
-                cx.strokeText('Level Achieved: ' + level, c.width/2, c.height * 0.56)
+                cx.strokeText('Enemies Killed: ' + kills, c.width/2, c.height * 0.4);
+                cx.strokeText('Total XP Gained: ' + parseFloat(totalXP.toFixed(1)), c.width/2, c.height * 0.48);
+                cx.strokeText('Level Achieved: ' + level, c.width/2, c.height * 0.56);
                 cx.shadowColor = "yellow";
                 cx.strokeText('Press R to Restart', c.width/2, c.height * 0.64);
             }
