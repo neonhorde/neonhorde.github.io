@@ -2342,7 +2342,7 @@
                 aoerunner: for(let i = 0; i < aoes.length; i++){
                     if (areass[i].eoti == 'Player'){
                         for(let  t = 0; t < enemies.length; t++){
-                            if(distanceCalc(aoes[i].x, aoes[i].y, enemies[t].x, enemies[t].y) - ml/2000 * enemies[t].width < ml/1000 * aoes[i].r){
+                            if(circleSquareHitDetector(enemies[t].x, enemies[t].y, enemies[t].width * ml/1000, enemies[t].height * ml/1000, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000)){
                                 ess[t].hp -= areass[i].damage * playerDamageMulti * additivePlayerDamageMulti;
                                 killChecker(t, "DOT");
                                 if(areass[i].damageconsume == true){
@@ -2352,7 +2352,7 @@
                             }
                         }
                     } else{
-                        if(distanceCalc(aoes[i].x, aoes[i].y, character.x, character.y) - ml/2000 * character.width < ml/1000 * aoes[i].r){
+                        if(circleSquareHitDetector(character.x, character.y, ml/1000 * character.width, ml/1000 * character.height, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000)){
                             if (areass[i].eoti == 'Curse'){
                                 damagePlayer(maxHealth, undefined);
                             } else{
@@ -2466,6 +2466,22 @@
             }
             render();
         }, 20)
+        function circleSquareHitDetector(sx, sy, sw, sh, cx, cy, cr){
+            for(let i = sy - sh; i < sy + sh; i++){
+                if(distanceCalc(sx - sw, i, cx, cy) <= cr || distanceCalc(sx + sw, i, cx, cy) <= cr){
+                    return true;
+                }
+            }
+            for(let i = sx - sw; i < sx + sw; i++){
+                if(distanceCalc(i, sy - sh, cx, cy) <= cr || distanceCalc(i, sy + sh, cx, cy) <= cr){
+                    return true;
+                }
+            }
+            if(distanceCalc(sx, sy, cx, cy) <= cr + (sw + sh)/2){
+                return true;
+            }
+            return false;
+        }
         function squareHitDetector(x1, y1, w1, h1, x2, y2, w2, h2){
             return x1 + w1 > x2 - w2 && x1 - w1 < x2 + w2 & y1 + h1 > y2 - w2 && y1 - h1 < y2 + w2;
         }
@@ -2702,6 +2718,7 @@
                         bulletCounter = 0;
                         bullets.length = 0;
                         bss.length = 0;
+                        bulletTrackerID.length = 0;
                         bullProperties.length = 0;
                         director();
                     }
@@ -3115,13 +3132,18 @@
                     let ypos =  ml/40 * (i - tempxoffset * mlhr) + ml/100;
                     cx.strokeRect(xpos, ypos, ml * 0.02, ml * 0.02);
                     purchasedItems[i].icon(xpos, ypos, 0.2);
-                    let amountPurchased = totalItemList[purchasedItems[i].trackerID].purchased
-                    if(amountPurchased > 1){
-                        cx.shadowColor = 'white';
-                        cx.strokeStyle = 'white';
+                    let target = totalItemList[purchasedItems[i].trackerID]
+                    if(target.purchased > 1){
+                        if(target.purchased == target.maxPurchases){
+                            cx.shadowColor = 'gold';
+                            cx.strokeStyle = 'gold';
+                        } else{
+                            cx.shadowColor = 'white';
+                            cx.strokeStyle = 'white';
+                        }
                         cx.font = ml/100 + "px Arial";
                         cx.lineWidth = ml/2000;
-                        cx.strokeText("X" + amountPurchased, xpos + ml * 0.02, ypos + ml * 0.005);
+                        cx.strokeText("X" + target.purchased, xpos + ml * 0.02, ypos + ml * 0.005);
                     }
                 }
                 cx.shadowColor = "blue";
