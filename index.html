@@ -108,7 +108,7 @@
             xp = 1000000000000000000000000000000000000;
             waveActive = false;
             spawnFinish = true;
-            wave = 50;
+            wave = 20;
         }
         let enemyHpScaling = 1.1;
         let enemyDamageScaling = 1.04;
@@ -2214,6 +2214,40 @@
                         this.shootMove = true;
                         this.skill = undefined;
                         this.contact = true;
+                        this.cycleCount = 3;
+                        this.angleOffset = 15;
+                        this.selfContactDamage = 0;
+                        this.size = 30;
+                        this.speed = 3;
+                        this.damage = 2;
+                        this.burst = 3;
+                        this.projectileDuration = 200;
+                        this.burstDelay = 0;
+                        this.shotIterations = 1;
+                        this.iterationsDelay = 0;
+                        this.hp = 8;
+                        this.minWave = 4;
+                        this.maxWave = 12;
+                        this.cost = 20;
+                        this.reward = 4;
+                        this.weight = 3000;
+                        this.shotDelay = 4000;
+                        this.projectileSize = 10;
+                        this.projectileSpeed = 4;
+                        this.projectileDamage = 1;
+                        this.followDistance = 0.4;
+                        break;
+                    case 7:
+                    case "Shotgun5":
+                        this.color = "white";
+                        this.glowcolor = "blue";
+                        this.moveai = "Follow";
+                        this.shotai = "DirectedAngle";
+                        this.effectsColor = "red";
+                        this.effectsGlowColor = "red";
+                        this.shootMove = true;
+                        this.skill = undefined;
+                        this.contact = true;
                         this.cycleCount = 5;
                         this.angleOffset = 30;
                         this.selfContactDamage = 0;
@@ -2226,10 +2260,10 @@
                         this.shotIterations = 1;
                         this.iterationsDelay = 0;
                         this.hp = 8;
-                        this.minWave = 4;
+                        this.minWave = 12;
                         this.maxWave = Infinity;
                         this.cost = 20;
-                        this.reward = 4;
+                        this.reward = 7;
                         this.weight = 3000;
                         this.shotDelay = 4000;
                         this.projectileSize = 10;
@@ -2259,7 +2293,7 @@
                         this.damage = 4;
                         this.hp = 16;
                         this.minWave = 8;
-                        this.maxWave = Infinity;
+                        this.maxWave = 18;
                         this.cost = 25;
                         this.reward = 4;
                         this.weight = 2000;
@@ -2322,6 +2356,111 @@
                         this.projectileSpeed = 8;
                         this.projectileDamage = 1;
                         this.followDistance = 0.35;
+                        break;
+                    case 8:
+                    case "Healer":
+                        this.color = "white";
+                        this.glowcolor = "white";
+                        this.effectsColor = "green";
+                        this.effectsGlowColor = "red";
+                        this.moveai = "Follow";
+                        this.shotai = undefined;
+                        this.skill = "AOE";
+                        this.contact = true;
+                        this.selfContactDamage = 0;
+                        this.size = 40;
+                        this.speed = 2;
+                        this.damage = 5;
+                        this.hp = 15;
+                        this.minWave = 10;
+                        this.maxWave = Infinity;
+                        this.cost = 30;
+                        this.reward = 6;
+                        this.weight = 2000;
+                        this.followDistance = 0.6;
+                        this.skillDelay = 6000;
+                        this.skillDuration = 2000;
+                        this.skillMove = false;
+                        this.skillOrigin = "TrueRandom";
+                        this.aoeSize = 150;
+                        this.aoeWidth = 3;
+                        this.aoeDamage = 0;
+                        this.aoeHealing = 0.2;
+                        this.damageConsume = false;
+                        this.healConsume = false;
+                        break;
+                    case 9:
+                    case "Bomber":
+                        this.color = "darkgray";
+                        this.glowcolor = "red";
+                        this.moveai = "Converge";
+                        this.shotai = "Random";
+                        this.effectsColor = "red";
+                        this.effectsGlowColor = "red";
+                        this.shootMove = false;
+                        this.skill = undefined;
+                        this.contact = true;
+                        this.selfContactDamage = 0;
+                        this.size = 20;
+                        this.speed = 4;
+                        this.damage = 3;
+                        this.burst = 50;
+                        this.projectileDuration = 150;
+                        this.burstDelay = 40;
+                        this.shotIterations = 1;
+                        this.iterationsDelay = 500;
+                        this.hp = 12;
+                        this.minWave = 20;
+                        this.maxWave = Infinity;
+                        this.cost = 20;
+                        this.reward = 10;
+                        this.weight = 3000;
+                        this.shotDelay = 5000;
+                        this.projectileSize = 6;
+                        this.projectileSpeed = 5;
+                        this.projectileDamage = 1;
+                        break;
+                    case 10:
+                    case "Wizard":
+                        this.color = "blue";
+                        this.glowcolor = "yellow";
+                        this.effectsColor = "red";
+                        this.effectsGlowColor = "red";
+                        this.shootMove = false;
+                        this.moveai = "Follow";
+                        this.shotai = "Basic";
+                        this.skill = "Laser";
+                        this.contact = true;
+                        this.selfContactDamage = 0;
+                        this.projectileDuration = 1000;
+                        this.burst = 3;
+                        this.burstDelay = 200;
+                        this.shotIterations = 1;
+                        this.iterationsDelay = 500;
+                        this.size = 25;
+                        this.speed = 3;
+                        this.damage = 5;
+                        this.hp = 16;
+                        this.minWave = 18;
+                        this.maxWave = Infinity;
+                        this.cost = 25;
+                        this.reward = 4;
+                        this.weight = 2000;
+                        this.shotDelay = 3000;
+                        this.projectileSize = 10;
+                        this.projectileSpeed = 3;
+                        this.projectileDamage = 1;
+                        this.followDistance = 0.3;
+                        this.projectileProperties = new bulletProperties(true, false, 0, false, false);
+                        this.laserSpeed = 5;
+                        this.laserLength = 150;
+                        this.laserSize = 3;
+                        this.laserDamage = 0.08;
+                        this.skillOrigin = "Dynamic";
+                        this.laserType = "Sweep";
+                        this.sweepPrecision = 45;
+                        this.skillDelay = 600;
+                        this.skillMove = true;
                         break;
                     case 4:
                     case "Tester":
@@ -2621,7 +2760,7 @@
                             }
                         }
                     } else{
-                        if(circleSquareHitDetector(character.x, character.y, ml/1000 * character.width, ml/1000 * character.height, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000)){
+                        if(circleSquareHitDetector(character.x, character.y, ml/1000 * character.width, ml/1000 * character.height, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000) && areass[i].damage > 0){
                             if (areass[i].eoti == 'Curse'){
                                 damagePlayer(maxHealth, undefined);
                             } else{
@@ -2634,15 +2773,15 @@
                         }
                         for(let t = 0; t < enemies.length; t++){
                             if(distanceCalc(aoes[i].x, aoes[i].y, enemies[t].x, enemies[t].y) - ml/enemies[t].width/2 < ml/1000 * aoes[i].r && ess[t].hp != enemyStatBlock[ess[t].type].hp){
-                                if(ess[t].hp + areass[i].healing >= enemyStatBlock[ess[t].type].hp){
-                                    ess[t].hp = enemyStatBlock[ess[t].type].hp;
+                                if(ess[t].hp + areass[i].healing * globalEnemyHP >= enemyStatBlock[ess[t].type].hp){
+                                    ess[t].hp = enemyStatBlock[ess[t].type].hp * globalEnemyHP;
                                     ess[t].healthBarCounter = 110;
                                     if(areass[i].healconsume == true){
                                         aoeDestroy(i);
                                         continue aoerunner;
                                     }
                                 } else{
-                                    ess[t].hp += areass[i].healing;
+                                    ess[t].hp += areass[i].healing * globalEnemyHP;
                                     ess[t].healthBarCounter = 100;
                                     if(areass[i].healconsume == true){
                                         aoeDestroy(i);
@@ -3319,7 +3458,7 @@
                         cx.fillStyle = type.effectsColor;
                         cx.shadowColor = type.effectsGlowColor;
                     } else{
-                        cx.fillStyle = "green";
+                        cx.fillStyle = "lime";
                         cx.shadowColor = "lime";
                     }
                     cx.fillRect(enemies[i].x - ml/2000 * enemies[i].width * 0.85, enemies[i].y - ml/2000 * enemies[i].height * 1.5, ml/1000 * enemies[i].width * 0.8 * ess[i].hp/(type.hp * globalEnemyHP), ml/10000 * enemies[i].height);
