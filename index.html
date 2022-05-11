@@ -24,9 +24,11 @@
         let movingRamMulti = 1;
         let movingContactReduction = 1;
         let shotDelay = 400;
+        let pauseDelay = 0;
         let curseCircleSize = 70;
         let curseCircleSpeed = 0.9; 
         let globalLifeSteal = 0;
+        let globalCounter = 0;
         let healthDegrade = 0;
         let overhaul = false;
         let curseChance = 0.005;
@@ -281,11 +283,14 @@
                     }
                     break;
                 case "KeyE":
-                    if(pause == false && waveActive == false){
+                    if(pause == false && pauseDelay <= 0){
                         pause = true;
                         standardAlpha = 0.5;
                     } else{
                         pause = false;
+                        if(waveActive == true){
+                            pauseDelay = 250;
+                        }
                         standardAlpha = 1;
                     }
                     break;
@@ -1568,7 +1573,7 @@
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
                         this.description = function(){
-                            return ["Landing a critical hit has a 10% (+5% per stack) chance to instantly give you another shadow bullet charge.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Landing a critical hit has a 10% (+5% per stack) chance to instantly give you another shadow bullet charge. This chance is divided by the number of projectiles you fire.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -2502,6 +2507,8 @@
         resize();
         var gameRunner = setInterval(function generalUpdate(){
             if(pause == false){
+                globalCounter++;
+                pauseDelay--;
                 if(health <= 0){
                     gameOver = true;
                     health = 0;
@@ -2701,11 +2708,11 @@
                                     bullets[i].width = bullets[i].originalWidth;
                                     bullets[i].height = bullets[i].originalHeight;
                                 }
-                                onHitEffects(totalDamage, t, i);
-                                killChecker(t, "Projectile");
                                 if(bullProperties[i].piercing == false || bss[i].damage <= 0){
                                     markedBullets.push(bulletTrackerID[i]);
                                 }
+                                onHitEffects(totalDamage, t, i);
+                                killChecker(t, "Projectile");
                                 continue bullethandler;
                             }
                         }
@@ -2757,7 +2764,7 @@
             return targetx + targetsize + size * Math.abs(ydirect) > minSide && targetx - targetsize - size/2 * Math.abs(ydirect) < maxSide && targety + targetsize + size * Math.abs(xdirect) > minSide2 && targety - targetsize - size * Math.abs(xdirect) < maxSide2 && targety + targetsize + size * Math.abs(xdirect) > expectedYMulti + y1 && targety - targetsize - size * Math.abs(xdirect) < expectedYMulti + y1;
         }
         function onCritEffects(impactx, impacty){
-            if(Math.random() <= critShadowChance){
+            if(Math.random() <= critShadowChance/playerProjectiles){
                 extraShots++;
             }
             if(critAoeDuration > 0){
@@ -3146,7 +3153,14 @@
             let finalAimerY;
             totalRunner: for(let t = 0; t < type.shotIterations; t++){
                 if(type.iterationsDelay != 0){
-                    await sleep(type.iterationsDelay)
+                    let offset = globalCounter;
+                    let duration = type.iterationsDelay/20;
+                    while(globalCounter <= offset + duration){
+                        await sleep(20)
+                    }
+                    if(enemyTrackerID.indexOf(trackerID) == -1){
+                        break totalRunner;
+                    }
                 }
                 for(let i = 0; i < type.burst; i++){
                     switch(shooterai){
@@ -3229,7 +3243,14 @@
                         break totalRunner;
                     }
                     if(type.burstDelay != 0){
-                        await sleep(type.burstDelay); 
+                        let offset = globalCounter;
+                        let duration = type.burstDelay/20;
+                        while(globalCounter <= offset + duration){
+                            await sleep(20)
+                        }
+                        if(enemyTrackerID.indexOf(trackerID) == -1){
+                            break totalRunner;
+                        }
                     }
                     if(type.burstChange == true && shooterai == "UndirectedAngle"){
                         ess[targetid].shotAngle += (type.shotMaxAngle - type.shotMinAngle)/type.cycleCount;
@@ -3364,7 +3385,7 @@
             cx.globalAlpha = 1;
             cx.strokeRect(0, c.height * 0.995, c.width/requiredXP * xp, ml/500);
             if(skillPoints != 0){
-                if(waveActive == true){
+                if(waveActive && pause == false){
                     cx.globalAlpha = 0.1;
                 } else{
                     cx.globalAlpha = 1;
@@ -3404,10 +3425,16 @@
             if(pause == true){
                 cx.globalAlpha = 1;
                 inventory()
-                cx.shadowColor = "blue";
-                cx.strokeStyle = "white";
-                cx.font = ml/30 + "px Arial";
+                cx.font = ml/60 + "px Arial";
+                cx.lineWidth = ml/1200;
+                cx.strokeStyle = 'white';
+                if(waveActive){
+                    cx.shadowColor = 'cyan';
+                    cx.strokeText("Unpausing in combat disables pausing for 5 seconds.", c.width/2, c.height * 0.9);
+                }
                 cx.lineWidth = ml/600;
+                cx.font = ml/30 + "px Arial";
+                cx.shadowColor = "blue";
                 cx.strokeText("Level: " + level, c.width/2, c.height * 0.06);
                 cx.font = ml/50 + "px Arial";
                 cx.lineWidth = ml/1000;
@@ -3632,7 +3659,10 @@
                 totalDelay /= shieldAttackSpeedBonus
             }
             if(extraShots <= 0){
-                await sleep(totalDelay);
+                let offset = globalCounter;
+                while(globalCounter <= offset + totalDelay/20){
+                    await sleep(20)
+                }
                 if(randomInt(0, 100) < extraShotChance){
                     extraShots++;
                 }
@@ -3644,13 +3674,20 @@
         shotCycler();
         async function iframeCycler(multi){
             invulnerable = true;
-            await sleep(iframes * multi);
+            let offset = globalCounter;
+            while(globalCounter <= offset + iframes * multi/20){
+                await sleep(20)
+            }
             invulnerable = false;
         }
         async function enemyShotCycler(enemyID){
             ess[enemyID].shotavailable = false;
             let trackerID = enemyTrackerID[enemyID];
-            await sleep(enemyStatBlock[ess[enemyID].type].shotDelay);
+            let offset = globalCounter;
+            let duration = enemyStatBlock[ess[enemyID].type].shotDelay/20
+            while(globalCounter <= offset + duration){
+                await sleep(20)
+            }
             if(enemyTrackerID.indexOf(trackerID) !== -1){
                 ess[enemyTrackerID.indexOf(trackerID)].shotavailable = true;
             }
@@ -3658,21 +3695,33 @@
         async function enemySkillCycler(enemyID){
             ess[enemyID].skillavailable = false;
             let trackerID = enemyTrackerID[enemyID];
-            await sleep(enemyStatBlock[ess[enemyID].type].skillDelay);
+            let offset = globalCounter;
+            let duration = enemyStatBlock[ess[enemyID].type].skillDelay/20;
+            while(globalCounter <= offset + duration){
+                await sleep(20)
+            }
             if(enemyTrackerID.indexOf(trackerID) !== -1){
                 ess[enemyTrackerID.indexOf(trackerID)].skillavailable = true;
             }
         }
         async function laserCycler(laserID){
             let trackerID = laserTrackerID[laserID];
-            await sleep(lss[laserID].duration);
+            let offset = globalCounter;
+            let duration = lss[laserID].duration/20
+            while(globalCounter <= offset + duration){
+                await sleep(20)
+            }
             if(laserTrackerID.indexOf(trackerID) !== -1){
                 laserDestroy(laserTrackerID.indexOf(trackerID));
             }
         }
         async function aoeCycler(aoeID){
             let trackerID = aoeTrackerID[aoeID];
-            await sleep(areass[aoeID].duration);
+            let offset = globalCounter;
+            let duration = areass[aoeID].duration/20;
+            while(globalCounter <= offset + duration){
+                await sleep(20)
+            }
             if(aoeTrackerID.indexOf(trackerID) !== -1){
                 aoeDestroy(aoeTrackerID.indexOf(trackerID))
             }
@@ -3744,9 +3793,12 @@
             {   let choice = true;
                 while(directorCredits >= minCost){
                     if(choice == true && enemyCount != 0){
-                        await sleep(randomInt(baseSpawnTime, baseSpawnTime * 2)/directorAggression);
+                        let offset = globalCounter;
+                        while(globalCounter <= offset + randomInt(baseSpawnTime, baseSpawnTime * 2)/directorAggression/20){
+                            await sleep(20)
+                        }
                     } else{
-                        await sleep(100/directorAggression);
+                        await sleep(20)
                     }
                     choice = false;
                     let enemyChooser = randomInt(1, (totalWeight - 1));
