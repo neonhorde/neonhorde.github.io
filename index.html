@@ -2662,7 +2662,7 @@
                 aoerunner: for(let i = 0; i < aoes.length; i++){
                     if (areass[i].eoti == 'Player'){
                         for(let  t = 0; t < enemies.length; t++){
-                            if(circleSquareHitDetector(enemies[t].x, enemies[t].y, enemies[t].width * ml/1000, enemies[t].height * ml/1000, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000)){
+                            if(circleSquareHitDetector(enemies[t].x, enemies[t].y, enemies[t].width * ml/2000, enemies[t].height * ml/2000, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000)){
                                 ess[t].hp -= areass[i].damage * playerDamageMulti * additivePlayerDamageMulti;
                                 killChecker(t, "DOT");
                                 if(areass[i].damageconsume == true){
@@ -2672,7 +2672,7 @@
                             }
                         }
                     } else{
-                        if(circleSquareHitDetector(character.x, character.y, ml/1000 * character.width, ml/1000 * character.height, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000) && areass[i].damage > 0){
+                        if(circleSquareHitDetector(character.x, character.y, ml/2000 * character.width, ml/2000 * character.height, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000) && areass[i].damage > 0){
                             if (areass[i].eoti == 'Curse'){
                                 damagePlayer(maxHealth, undefined);
                             } else{
@@ -2684,7 +2684,7 @@
                             }
                         }
                         for(let t = 0; t < enemies.length; t++){
-                            if(distanceCalc(aoes[i].x, aoes[i].y, enemies[t].x, enemies[t].y) - ml/enemies[t].width/2 < ml/1000 * aoes[i].r && ess[t].hp != enemyStatBlock[ess[t].type].hp){
+                            if(circleSquareHitDetector(enemies[t].x, enemies[t].y, enemies[t].width * ml/2000, enemies[t].height * ml/2000, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000) && ess[t].hp != enemyStatBlock[ess[t].type].hp){
                                 if(ess[t].hp + areass[i].healing * globalEnemyHP >= enemyStatBlock[ess[t].type].hp){
                                     ess[t].hp = enemyStatBlock[ess[t].type].hp * globalEnemyHP;
                                     ess[t].healthBarCounter = 110;
@@ -2796,18 +2796,12 @@
             render();
         }, 20)
         function circleSquareHitDetector(sx, sy, sw, sh, cx, cy, cr){
-            for(let i = sy - sh; i < sy + sh; i++){
-                if(distanceCalc(sx - sw, i, cx, cy) <= cr || distanceCalc(sx + sw, i, cx, cy) <= cr){
-                    return true;
+            for(let i = sx - sw; i < sx + sw; i += ml/1000){
+                for(let t = sy - sh; t < sy + sh; t += ml/1000){
+                    if(distanceCalc(i, t, cx, cy) <= cr){
+                        return true;
+                    }
                 }
-            }
-            for(let i = sx - sw; i < sx + sw; i++){
-                if(distanceCalc(i, sy - sh, cx, cy) <= cr || distanceCalc(i, sy + sh, cx, cy) <= cr){
-                    return true;
-                }
-            }
-            if(distanceCalc(sx, sy, cx, cy) <= cr + (sw + sh)/2){
-                return true;
             }
             return false;
         }
@@ -3806,7 +3800,7 @@
             this.y = (targetY - originY)/totalDistance;
         }
         function distanceCalc(originX, originY, targetX, targetY){
-            return Math.abs(targetX - originX) + Math.abs(targetY - originY);
+            return Math.sqrt(Math.pow(Math.abs(targetX - originX), 2) + Math.pow(Math.abs(targetY - originY), 2));
         }
         function enemySpawner(enemyID){
             let enemyStats = enemyStatBlock[enemyID];
