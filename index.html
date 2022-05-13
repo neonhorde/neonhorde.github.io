@@ -227,7 +227,7 @@
                 inspectingTarget = 0;
                 inspecting = 0;
                 for(let i = 0; i < purchasedItems.length; i++){
-                    if(squareHitCornerDetector(mouseX, mouseY, 0, 0, ml/30 * Math.floor(i/mlhr), ml/40 * (i - Math.floor(i/mlhr) * mlhr) + ml/100, ml/50, ml/50)){
+                    if(squareHitCornerDetector(mouseX, mouseY, 0, 0, ml/30 * Math.floor(i/mlhr) + ml/100, ml/40 * (i - Math.floor(i/mlhr) * mlhr) + ml/100, ml/50, ml/50)){
                         inspecting = i;
                         inspectingTarget = 2;
                         break;
@@ -369,10 +369,10 @@
                 this.purchased = 0;
                 this.boxStyle = 'cyan';
                 this.boxGlowStyle = 'blue';
+                this.nameColor = "white";
+                this.nameGlowColor = "cyan";
                 switch(id){
                     case 0:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Forged Bullets";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
@@ -403,8 +403,6 @@
                         }
                         break;
                     case 1:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "XP Osmosis";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
@@ -443,8 +441,6 @@
                         }
                         break;
                     case 2:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Charged Weaponry";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
@@ -470,8 +466,6 @@
                         }
                         break;
                     case 3:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Twin Thrusters";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
@@ -500,8 +494,6 @@
                         }
                         break;
                     case 4:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Engineering Manual";
                         this.maxPurchases = 2;
                         this.baseCopies = 100;
@@ -526,8 +518,6 @@
                         }
                         break;
                     case 5:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Bullet Boosters";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
@@ -554,8 +544,6 @@
                         }
                         break;
                     case 6:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Death Bursts";
                         this.maxPurchases = 3;
                         this.baseCopies = 125;
@@ -600,8 +588,6 @@
                         }
                         break;
                     case 7:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Shadow Bullets";
                         this.maxPurchases = 3;
                         this.baseCopies = 125;
@@ -627,8 +613,6 @@
                         }
                         break;
                     case 8:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Strengthed Hull";
                         this.maxPurchases = 5;
                         this.baseCopies = 50;
@@ -653,8 +637,6 @@
                         }
                         break;
                     case 9:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Pre-Emptive Repairs";
                         this.maxPurchases = 3;
                         this.baseCopies = 50;
@@ -681,8 +663,6 @@
                         }
                         break;
                     case 10:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Titanium Exoskeleton";
                         this.maxPurchases = 4;
                         this.baseCopies = 125;
@@ -713,8 +693,6 @@
                         }
                         break;
                     case 11:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Impact-Powered Repairs";
                         this.maxPurchases = 2;
                         this.baseCopies = 125;
@@ -750,8 +728,6 @@
                         }
                         break;
                     case 12:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Friction Shielding";
                         this.maxPurchases = 2;
                         this.baseCopies = 100;
@@ -798,8 +774,6 @@
                         }
                         break;
                     case 13:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Rash Engineering";
                         this.maxPurchases = 2;
                         this.baseCopies = 100;
@@ -826,8 +800,6 @@
                         }
                         break;
                     case 14:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Repulsion Shielding";
                         this.maxPurchases = 4;
                         this.baseCopies = 80;
@@ -861,8 +833,6 @@
                         }
                         break;
                     case 15:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Impact Reserves";
                         this.maxPurchases = 3;
                         this.baseCopies = 80;
@@ -953,8 +923,6 @@
                         }
                         break;
                     case 17:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Rapid Power Diversion";
                         this.maxPurchases = 3;
                         this.baseCopies = 100;
@@ -1005,7 +973,6 @@
                         }
                         break;
                     case 18:
-                        this.nameColor = "white";
                         this.nameGlowColor = "pink";
                         this.name = "Chained Power Surge";
                         this.maxPurchases = 3;
@@ -1046,7 +1013,6 @@
                         }
                         break;
                     case 19:
-                        this.nameColor = "white";
                         this.nameGlowColor = "pink";
                         this.name = "Shielding Flow";
                         this.maxPurchases = 3;
@@ -1085,8 +1051,6 @@
                         }
                         break;
                     case 20:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "In-Transit Restoration";
                         this.maxPurchases = 5;
                         this.baseCopies = 125;
@@ -1121,8 +1085,6 @@
                         }
                         break;
                     case 21:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "On-Site Tuneup";
                         this.maxPurchases = 3;
                         this.baseCopies = 125;
@@ -1155,8 +1117,6 @@
                         }
                         break;
                     case 22:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Accelerated Cannon";
                         this.maxPurchases = 3;
                         this.baseCopies = 125;
@@ -1192,8 +1152,6 @@
                         }
                         break;
                     case 23:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Precision Targeting";
                         this.maxPurchases = 5;
                         this.baseCopies = 100;
@@ -1227,8 +1185,6 @@
                         }
                         break;
                     case 24:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Growing Shot";
                         this.maxPurchases = 4;
                         this.baseCopies = 125;
@@ -1254,8 +1210,6 @@
                         }
                         break;
                     case 25:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Bouncy Bullets";
                         this.maxPurchases = 3;
                         this.baseCopies = 125;
@@ -1284,8 +1238,6 @@
                         }
                         break;
                     case 26:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Improved Materials";
                         this.maxPurchases = 5;
                         this.baseCopies = 125;
@@ -1312,8 +1264,6 @@
                         }
                         break;
                     case 27:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Fragmented Bullets";
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
@@ -1339,8 +1289,6 @@
                         }
                         break;
                     case 28:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Resilient Make";
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
@@ -1369,8 +1317,6 @@
                         }
                         break;
                     case 29:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Elastic Enhancements";
                         this.maxPurchases = 4;
                         this.baseCopies = 200;
@@ -1395,8 +1341,6 @@
                         }
                         break;
                     case 30:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Sharpened Fragments";
                         this.maxPurchases = 3;
                         this.baseCopies = 200;
@@ -1428,8 +1372,6 @@
                         }
                         break;
                     case 31:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Friction Bypass";
                         this.maxPurchases = 4;
                         this.baseCopies = 200;
@@ -1499,8 +1441,6 @@
                         }
                         break;
                     case 33:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Miniature Shield Generator";
                         this.maxPurchases = 5;
                         this.baseCopies = 100;
@@ -1531,8 +1471,6 @@
                         }
                         break;
                     case 34:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Energized Reactor";
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
@@ -1567,8 +1505,6 @@
                         }
                         break;
                     case 35:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Precision Shadow Strike";
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
@@ -1610,8 +1546,6 @@
                         }
                         break;
                     case 36:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Harnessed Impact";
                         this.maxPurchases = 4;
                         this.baseCopies = 150;
@@ -1649,8 +1583,6 @@
                         }
                         break;
                     case 37:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Reactive Bullets";
                         this.maxPurchases = 5;
                         this.baseCopies = 180;
@@ -1686,8 +1618,6 @@
                         }
                         break;
                     case 38:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Autonomous Targeting Matrix";
                         this.maxPurchases = 5;
                         this.baseCopies = 180;
@@ -1727,8 +1657,6 @@
                         }
                         break;
                     case 39:
-                        this.nameColor = "white";
-                        this.nameGlowColor = "cyan";
                         this.name = "Desperation Overcharge";
                         this.maxPurchases = 3;
                         this.baseCopies = 180;
@@ -1763,7 +1691,6 @@
                         }
                         break;
                     case 40:
-                        this.nameColor = "white";
                         this.nameGlowColor = "red";
                         this.name = "Elemental Powered Gatling";
                         this.maxPurchases = 1;
@@ -1804,7 +1731,6 @@
                         }
                         break;
                     case 41:
-                        this.nameColor = "white";
                         this.nameGlowColor = "red";
                         this.name = "Cursed Idol";
                         this.maxPurchases = 1;
@@ -1829,7 +1755,7 @@
                             curseChance *= curseChanceLoss;
                             skillIDCounter++;
                             aoes.push(new circlecomponent(0, 0, curseCircleSize, ml/1000, 'lime', 'lime'));
-                            areass.push(new areasSideStats(0, 0, 0, 'Curse', false, false));
+                            areass.push(new areasSideStats(0, 1, 0, 'Curse', false, false));
                             aoeTrackerID.push(skillIDCounter);
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -1852,7 +1778,6 @@
                         }
                         break;
                     case 42:
-                        this.nameColor = "white";
                         this.nameGlowColor = "red";
                         this.name = "Glass Mainframe";
                         this.maxPurchases = 1;
@@ -1884,7 +1809,6 @@
                         }
                         break;
                     case 43:
-                        this.nameColor = "white";
                         this.nameGlowColor = "red";
                         this.name = "Hungering Bullets";
                         this.maxPurchases = 1;
@@ -1932,7 +1856,6 @@
                         }
                         break;
                     case 44:
-                        this.nameColor = "white";
                         this.nameGlowColor = "red";
                         this.name = "Goliath Form";
                         this.maxPurchases = 1;
@@ -1970,7 +1893,6 @@
                         }
                         break;
                     case 45:
-                        this.nameColor = "white";
                         this.nameGlowColor = "red";
                         this.name = "Ant Form";
                         this.maxPurchases = 1;
@@ -2008,7 +1930,6 @@
                         }
                         break;
                     case 46:
-                        this.nameColor = "white";
                         this.nameGlowColor = "red";
                         this.name = "Unstoppable Virus";
                         this.maxPurchases = 1;
@@ -2055,7 +1976,6 @@
                         }
                         break;
                     case 47:
-                        this.nameColor = "white";
                         this.nameGlowColor = "red";
                         this.name = "Doom Module";
                         this.maxPurchases = 1;
@@ -2094,7 +2014,6 @@
                         }
                         break;
                     case 48:
-                        this.nameColor = "white";
                         this.nameGlowColor = "red";
                         this.name = "Parasite Module";
                         this.maxPurchases = 1;
@@ -2214,6 +2133,7 @@
                         this.shootMove = true;
                         this.skill = undefined;
                         this.contact = true;
+                        this.burstChange = true;
                         this.cycleCount = 3;
                         this.angleOffset = 15;
                         this.selfContactDamage = 0;
@@ -2566,14 +2486,14 @@
             for(let i = 0; i < totalItemList.length; i++){
                 if(totalItemList[i].requirements() && totalItemList[i].purchased < totalItemList[i].maxPurchases && totalItemList[i].copies() > 0){
                     availableItemList.push(totalItemList[i]);
-                    totalWeight += totalItemList[i].copies()
+                    totalWeight += totalItemList[i].baseCopies;
                 }
             }
             for(let i = 0; i < 4; i++){
                 let choice = randomInt(0, totalWeight);
                 let choiceTracker = 0;
                 for(let t = 0; t < availableItemList.length; t++){
-                    if(choice > choiceTracker && choice <= choiceTracker + availableItemList[t].baseCopies){
+                    if(choice >= choiceTracker && choice <= choiceTracker + availableItemList[t].baseCopies){
                         offeredItems.push(availableItemList[t]);
                         availableItemList.splice(t, 1);
                         totalWeight = 0;
@@ -2582,9 +2502,9 @@
                         }
                         break;
                     }
-                    choiceTracker += availableItemList[t].copies();
+                    choiceTracker += availableItemList[t].baseCopies;
                 }
-            }
+            }   
         }
         function resize(){
             let tempX = c.width/character.x;
@@ -2648,14 +2568,6 @@
             if(pause == false){
                 globalCounter++;
                 pauseDelay--;
-                if(health <= 0){
-                    gameOver = true;
-                    health = 0;
-                    window.clearInterval(gameRunner)
-                    render();
-                } else{
-                    health -= maxHealth * healthDegrade/50;
-                }
                 killTime++;
                 damageTime++;
                 if(damageTime >= regenDelay * 50 && waveActive == true){
@@ -2872,6 +2784,14 @@
                     bulletDestroy(bulletTrackerID.indexOf(markedBullets[i]));
                 }
                 waveDelayCounter++;
+                if(health <= 0){
+                    gameOver = true;
+                    health = 0;
+                    window.clearInterval(gameRunner)
+                    render();
+                } else{
+                    health -= maxHealth * healthDegrade/50;
+                }
             }
             render();
         }, 20)
@@ -3113,6 +3033,7 @@
                 if(enemyCount == 0 && spawnFinish == true){
                     waveActive = false;
                     shield = maxShield
+                    pauseDelay = 0;
                     enemyWaveCounter = 0;
                     heal(storedRammingHP);
                     storedRammingHP = 0;
@@ -3407,7 +3328,7 @@
             }
             if(enemyTrackerID.indexOf(trackerID) !== -1){
                 ess[targetid].shooting = false;
-            } 
+            }
         }
         function render(){
             cx.globalAlpha = standardAlpha;
@@ -3542,7 +3463,7 @@
                     cx.shadowColor = purchasedItems[i].boxGlowStyle;
                     cx.strokeStyle = purchasedItems[i].boxStyle;
                     cx.lineWidth = ml/1000;
-                    let xpos = ml/30 * tempxoffset;
+                    let xpos = ml/30 * tempxoffset + ml/100;
                     let ypos =  ml/40 * (i - tempxoffset * mlhr) + ml/100;
                     cx.strokeRect(xpos, ypos, ml * 0.02, ml * 0.02);
                     purchasedItems[i].icon(xpos, ypos, 0.2);
@@ -3672,7 +3593,7 @@
                             break;
                     }
                 } else if (inspectingTarget == 2){
-                    cx.fillRect(ml/30 * Math.floor(inspecting/mlhr), ml/40 * (inspecting - Math.floor(inspecting/mlhr) * mlhr) + ml/100, ml/50, ml/50);
+                    cx.fillRect(ml/30 * Math.floor(inspecting/mlhr) + ml/100, ml/40 * (inspecting - Math.floor(inspecting/mlhr) * mlhr) + ml/100, ml/50, ml/50);
                 } else if (inspectingTarget == 3){
                     cx.fillRect(c.width * 0.45, c.height * 0.15, c.width * 0.1, c.height * 0.05);
                     cx.strokeStyle = "white";
