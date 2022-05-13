@@ -59,6 +59,7 @@
         let shieldRegenDelay = 5
         let shieldRegenTime = 3
         let iframes = 300;
+        let maxHealthGuaranteed = false;
         let lastKillType;
         let roundRegen = 0;
         let levelRegen = 0;
@@ -1424,6 +1425,10 @@
                         this.buy = function(){
                             maxHealth -= 35;
                             health -= 35;
+                            if(maxHealth <= 0){
+                                maxHealth = 1;
+                                health = 1;
+                            }
                             pierceChance += 0.2;
                             bounceChance += 0.2;
                             bulletDuration += 60;
@@ -2021,7 +2026,7 @@
                         this.boxStyle = 'red';
                         this.boxGlowStyle = 'red';
                         this.description = function(){
-                            return ["Forbidden Upgrade", "Your health constantly degrades at a rate of 2% of your max hp per second. Hitting enemies now heals you for 2 health."];
+                            return ["Forbidden Upgrade", "Your health constantly degrades at a rate of 2% of your max hp per second. Hitting enemies now heals you for 2 health. Level ups now always reward max health regardless of your max hp."];
                         }
                         this.copies = function(){
                             if(Math.random() < curseChance){
@@ -2036,6 +2041,7 @@
                         this.buy = function(){
                             globalLifeSteal += 2;
                             healthDegrade += 0.02;
+                            maxHealthGuaranteed = true;
                             curseChance *= curseChanceLoss;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -3047,7 +3053,7 @@
             heal(levelRegen);
             skillPoints++;
             level++;
-            if(health == maxHealth){
+            if(health == maxHealth || maxHealthGuaranteed){
                 health += maxHpPerLevel;
                 maxHealth += maxHpPerLevel;
             } else{
@@ -3795,7 +3801,7 @@
             laserTrackerID.splice(id, 1);
         }
         function aimer(originX, originY, targetX, targetY){
-            let totalDistance = distanceCalc(originX, originY, targetX, targetY);
+            let totalDistance = Math.abs(targetX - originX) + Math.abs(targetY - originY);
             this.x = (targetX - originX)/totalDistance;
             this.y = (targetY - originY)/totalDistance;
         }
