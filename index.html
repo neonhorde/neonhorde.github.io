@@ -22,13 +22,15 @@
         let selfBulletDamage = false;
         let shotSpread = 0;
         let movingRamMulti = 1;
-        let movingContactReduction = 1;
+        let movingDamageReduction = 1;
         let shotDelay = 400;
         let pauseDelay = 0;
         let curseCircleSize = 70;
         let curseCircleSpeed = 0.9; 
         let globalLifeSteal = 0;
         let globalCounter = 0;
+        let adrenalTime = 100;
+        let adrenalBonus = 1;
         let healthDegrade = 0;
         let overhaul = false;
         let curseChance = 0.005;
@@ -83,6 +85,8 @@
         let rammingDamage = 1;
         let baseRammingDamage= 10;
         let speedStatMulti = 0;
+        let baseSpeedStatDamage = 0.02;
+        let baseSpeedStatResistance = 0.06;
         let rammingGains = 0;
         let rammingLosses = 0;
         let rammingIframes = 1;
@@ -109,7 +113,7 @@
             xp = 1000000000000000000000000000000000000;
             waveActive = false;
             spawnFinish = true;
-            wave = 20;
+            wave = 1;
         }
         let enemyHpScaling = 1.1;
         let enemyDamageScaling = 1.04;
@@ -668,7 +672,7 @@
                         this.maxPurchases = 4;
                         this.baseCopies = 125;
                         this.description = function(){
-                            return ["Reduce contact damage taken by an additive 15%.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Reduce contact damage taken by a multiplicative 20%. Increases base ramming damage by 10.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -677,7 +681,8 @@
                             return totalItemList[8].purchased >= 2;
                         }
                         this.buy = function(){
-                            contactDamageReduction += -0.15;
+                            contactDamageReduction *= 0.8;
+                            baseRammingDamage += 10;
                             this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -733,7 +738,7 @@
                         this.maxPurchases = 2;
                         this.baseCopies = 100;
                         this.description = function(){
-                            return ["Reduces contact damage and increases ramming damage dealt to enemies based on your move speed, provided you are moving.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Reduces all damage and increases ramming damage dealt to enemies based on your move speed, provided you are moving.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -779,7 +784,7 @@
                         this.maxPurchases = 2;
                         this.baseCopies = 100;
                         this.description = function(){
-                            return ["Reduces the time taken by the delayed healing upon contact damage by 1 second.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Reduces the time taken by the delayed healing upon contact damage by 1 second. Adds 10 base ramming damage.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -789,6 +794,7 @@
                         }
                         this.buy = function(){
                             DCHtime--;
+                            baseRammingDamage += 10;
                             this.baseCopies += 20;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -805,7 +811,7 @@
                         this.maxPurchases = 4;
                         this.baseCopies = 80;
                         this.description = function(){
-                            return ["Adds a base 10 damage to ramming and increases overall ramming damage by 10%, additively.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Adds a base 15 damage to ramming and increases overall ramming damage by 10%, additively.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -815,7 +821,7 @@
                         }
                         this.buy = function(){
                             rammingDamage += 0.1;
-                            baseRammingDamage += 10;
+                            baseRammingDamage += 15;
                             this.baseCopies += 20;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -885,7 +891,7 @@
                         this.boxStyle = 'gold';
                         this.boxGlowStyle = 'gold';
                         this.description = function(){
-                            return ["Massively reduces your rate of fire and immunity frames when receiving contact damage. However, increases contact damage resistance by 10%, adds 100% ramming damage, reduces the time delayed contact healing takes by a further 0.5 seconds, and increases your move speed by 5.", "Purchasing an overhaul upgrade will lock you out from purchasing any other."];
+                            return ["Massively reduces your rate of fire and removes immunity frames when receiving contact damage. However, reduces contact damage by 50%, adds 100% ramming damage, reduces the time delayed contact healing takes by a further 0.5 seconds, and increases your base move speed by 5.", "Purchasing an overhaul upgrade will lock you out from purchasing any other."];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -895,12 +901,12 @@
                         }
                         this.buy = function(){
                             overhaul = true;
-                            shotDelay = shotDelay * 5;
-                            contactDamageReduction += 0.1;
+                            shotDelay *= 5;
+                            contactDamageReduction *= 0.5;
                             rammingDamage++;
                             DCHtime += -0.5;
                             playerSpeed += 5;
-                            rammingIframes = 0.1;
+                            rammingIframes = 0;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "black";
@@ -928,7 +934,7 @@
                         this.maxPurchases = 3;
                         this.baseCopies = 100;
                         this.description = function(){
-                            return ["Heal for 0.25 (+0.25 per stack) hp per kill done with ramming damage.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Heal for 2 (+2 per stack) hp per kill done with ramming damage. Adds 8% ramming damage.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -938,7 +944,8 @@
                         }
                         this.buy = function(){
                             this.baseCopies += 20;
-                            rammingKillSteal += 0.25;
+                            rammingDamage += 0.08;
+                            rammingKillSteal += 2;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -1019,7 +1026,7 @@
                         this.maxPurchases = 3;
                         this.baseCopies = 200;
                         this.description = function(){
-                            return ["Killing an enemy with ramming damage temporarily makes you immune to contact damage for 0.2 (+0.2 per stack) seconds.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Killing an enemy with ramming damage temporarily makes you immune to all damage for 0.2 (+0.2 per stack) seconds.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -1893,7 +1900,8 @@
                             cx.fillRect(xoffset + ml * 0.015 * size, yoffset + ml * 0.015 * size, ml * 0.07 * size, ml * 0.07 * size);
                             cx.lineWidth = ml * 0.0015;
                             cx.strokeStyle = 'red';
-                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);                            cx.shadowColor = 'red';
+                            cx.shadowColor = 'red';
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
                             cx.strokeRect(xoffset + ml * 0.035 * size, yoffset + ml * 0.035 * size, ml * 0.03 * size, ml * 0.03 * size);
                         }
                         break;
@@ -2026,7 +2034,7 @@
                         this.boxStyle = 'red';
                         this.boxGlowStyle = 'red';
                         this.description = function(){
-                            return ["Forbidden Upgrade", "Your health constantly degrades at a rate of 2% of your max hp per second. Hitting enemies now heals you for 2 health. Level ups now always reward max health regardless of your max hp."];
+                            return ["Forbidden Upgrade", "Your health constantly degrades at a rate of 5% of your max hp per second. Hitting enemies now heals you for 2 health. Level ups now always reward max health regardless of your max hp."];
                         }
                         this.copies = function(){
                             if(Math.random() < curseChance){
@@ -2040,7 +2048,7 @@
                         }
                         this.buy = function(){
                             globalLifeSteal += 2;
-                            healthDegrade += 0.02;
+                            healthDegrade += 0.05;
                             maxHealthGuaranteed = true;
                             curseChance *= curseChanceLoss;
                         }
@@ -2053,6 +2061,41 @@
                             cx.fillRect(xoffset + ml * 0.04 * size, yoffset + ml * 0.015 * size, ml * 0.02 * size, ml * 0.05 * size);
                             cx.fillRect(xoffset + ml * 0.035 * size, yoffset + ml * 0.065 * size, ml * 0.01 * size, ml * 0.02 * size);
                             cx.fillRect(xoffset + ml * 0.055 * size, yoffset + ml * 0.065 * size, ml * 0.01 * size, ml * 0.02 * size);
+                        }
+                        break;
+                    case 49:
+                        this.name = "Adrenal Drive";
+                        this.maxPurchases = 3;
+                        this.baseCopies = 100;
+                        this.description = function(){
+                            return ["Upon taking damage, increase your movespeed by 40% (+40% per stack) for 2 seconds.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[3].purchased >= 3;
+                        }
+                        this.buy = function(){
+                            adrenalBonus += 0.4;
+                            this.baseCopies += 25;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.strokeStyle = "red";
+                            cx.shadowColor = "red";
+                            cx.lineWidth = ml * 0.002;
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.beginPath();
+                            cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.05 * size);
+                            cx.lineTo(xoffset, yoffset + ml * 0.05 * size);
+                            cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.03 * size);
+                            cx.lineTo(xoffset, yoffset + ml * 0.03 * size);
+                            cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.07 * size);
+                            cx.lineTo(xoffset, yoffset + ml * 0.07 * size);
+                            cx.stroke();
                         }
                         break;
                     default:
@@ -2582,20 +2625,24 @@
                 if(damageTime >= shieldRegenDelay * 50){
                     shieldHeal(maxShield/(shieldRegenTime * 50))
                 }
-                if(playerXDirect == 0 || playerYDirect == 0){
-                    moving = false;
-                    movingRamMulti = 1;
-                    movingContactReduction = 1;
-                } else{
-                    moving = true;
-                    movingRamMulti = 1 + 0.035 * playerSpeed * speedStatMulti;
-                    movingContactReduction = 1 + 0.008 * playerSpeed * speedStatMulti;
+                let totalSpeed = playerSpeed;
+                if(damageTime < adrenalTime){
+                    totalSpeed *= adrenalBonus;
                 }
                 if(character.x > 0 && playerXDirect == -1 || character.x < c.width && playerXDirect == 1){
-                    character.x += ml/1000 * playerSpeed * playerXDirect;
+                    character.x += ml/1000 * totalSpeed * playerXDirect;
                 }
                 if(character.y > 0 && playerYDirect == -1 || character.y < c.height && playerYDirect == 1){
-                    character.y += ml/1000 * playerSpeed * playerYDirect;
+                    character.y += ml/1000 * totalSpeed * playerYDirect;
+                }
+                if(playerXDirect == 0 && playerYDirect == 0){
+                    moving = false;
+                    movingRamMulti = 1;
+                    movingDamageReduction = 1;
+                } else{
+                    moving = true;
+                    movingRamMulti = 1 + baseSpeedStatDamage * totalSpeed * speedStatMulti;
+                    movingDamageReduction = Math.pow(1 - baseSpeedStatResistance, totalSpeed * speedStatMulti);
                 }
                 playerBuffs.deathBurst--;
                 if(currentDCH > 0){
@@ -2899,7 +2946,7 @@
         }
         function damagePlayer(damage, damageType){
             damageTime = 0;
-            let damagedealt = damage * damageReduction * globalEnemyDamage
+            let damagedealt = damage * damageReduction * globalEnemyDamage * movingDamageReduction;
             switch(damageType){
                 case "DOT":
                     damagedealt *= dotDamageReduction;
@@ -2914,8 +2961,8 @@
                     storedRammingHP += -rammingLosses;
                     break;
                 case "Contact": 
-                    if(killTime < rammingImmunityTime * 50 || lastKillType !== "Ramming"){
-                        damagedealt *= contactDamageReduction * movingContactReduction
+                    if(killTime > rammingImmunityTime * 50 || lastKillType !== "Ramming"){
+                        damagedealt *= contactDamageReduction;
                     } else{
                         damagedealt = 0;
                     }
