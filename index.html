@@ -12,6 +12,7 @@
         const cx = c.getContext("2d");
         let ml;
         let devMode = false;
+        let devwave = 20;
         let playerSize = 25;
         let bulletSize = 10;
         let playerYDirect = 0;
@@ -48,6 +49,7 @@
         let bulletSpeed = 20;
         let level = 1;
         let playerDamage = 5;
+        let antiProjectileSize = 0;
         let playerDamageMulti = 1;
         let additivePlayerDamageMulti = 1;
         let maxHpPerLevel = 3;
@@ -113,7 +115,7 @@
             xp = 1000000000000000000000000000000000000;
             waveActive = false;
             spawnFinish = true;
-            wave = 1;
+            wave = devwave;
         }
         let enemyHpScaling = 1.1;
         let enemyDamageScaling = 1.04;
@@ -664,6 +666,7 @@
                             cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
                             cx.strokeStyle = "lime";
                             cx.shadowColor = "lime";
+                            cx.lineWidth = ml/1000;
                             cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
                         }
                         break;
@@ -2098,6 +2101,71 @@
                             cx.stroke();
                         }
                         break;
+                    case 50:
+                        this.name = "Defensive Wave";
+                        this.maxPurchases = 3;
+                        this.baseCopies = 150;
+                        this.description = function(){
+                            return ["Upon killing an enemy, destroy all projectiles around the enemy that died. Size of the effect increases with stacks.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[51].purchased >= 2;
+                        }
+                        this.buy = function(){
+                            antiProjectileSize += 60;
+                            this.baseCopies += 35;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = 'gray';
+                            cx.shadowColor = 'red';
+                            cx.fillRect(xoffset + ml * size * 0.03, yoffset + ml * size * 0.01, ml * 0.015 * size, ml * 0.015 * size);
+                            cx.fillRect(xoffset + ml * size * 0.035, yoffset + ml * size * 0.03, ml * 0.015 * size, ml * 0.015 * size);
+                            cx.fillRect(xoffset + ml * size * 0.05, yoffset + ml * size * 0.02, ml * 0.015 * size, ml * 0.015 * size);
+                            cx.fillRect(xoffset + ml * size * 0.04, yoffset + ml * size * 0.05, ml * 0.015 * size, ml * 0.015 * size);
+                            cx.fillRect(xoffset + ml * size * 0.05, yoffset + ml * size * 0.045, ml * 0.015 * size, ml * 0.015 * size);
+                            cx.fillRect(xoffset + ml * size * 0.02, yoffset + ml * size * 0.045, ml * 0.015 * size, ml * 0.015 * size);
+                            cx.fillRect(xoffset + ml * size * 0.06, yoffset + ml * size * 0.035, ml * 0.015 * size, ml * 0.015 * size);
+                            cx.shadowColor = 'gray';
+                            cx.strokeStyle = 'gray';
+                            cx.lineWidth = 0.003 * ml;
+                            cx.beginPath();
+                            cx.arc(xoffset + ml * size * 0.05, yoffset + ml * size * 0.05, ml * size * 0.04, 0, Math.PI);
+                            cx.stroke();
+                        }
+                        break;
+                    case 51:
+                        this.name = "Impact-Hardened Hull";
+                        this.maxPurchases = 5;
+                        this.baseCopies = 100;
+                        this.description = function(){
+                            return ["Reduce projectile damage by a multiplicative 10%.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[10].purchased >= 2;
+                        }
+                        this.buy = function(){
+                            projectileDamageReduction *= 0.9;
+                            this.baseCopies += 35;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.lineWidth = ml * 0.002;
+                            cx.strokeStyle = "black";
+                            cx.shadowColor = "red";
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.025 * size, ml * 0.025 * size);
+                            cx.strokeRect(xoffset + ml * 0.05 * size, yoffset + ml * 0.025 * size, ml * 0.025 * size, ml * 0.025 * size);
+                            cx.strokeRect(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size, ml * 0.025 * size, ml * 0.025 * size);
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.05 * size, ml * 0.025 * size, ml * 0.025 * size);
+                        }
+                        break;
                     default:
                         preGameCycler = true;
                         break;
@@ -2738,7 +2806,7 @@
                         }
                         for(let t = 0; t < enemies.length; t++){
                             if(circleSquareHitDetector(enemies[t].x, enemies[t].y, enemies[t].width * ml/2000, enemies[t].height * ml/2000, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000) && ess[t].hp != enemyStatBlock[ess[t].type].hp){
-                                if(ess[t].hp + areass[i].healing * globalEnemyHP >= enemyStatBlock[ess[t].type].hp){
+                                if(ess[t].hp + areass[i].healing * globalEnemyHP >= enemyStatBlock[ess[t].type].hp * globalEnemyHP){
                                     ess[t].hp = enemyStatBlock[ess[t].type].hp * globalEnemyHP;
                                     ess[t].healthBarCounter = 110;
                                     if(areass[i].healconsume == true){
@@ -2947,6 +3015,9 @@
         function damagePlayer(damage, damageType){
             damageTime = 0;
             let damagedealt = damage * damageReduction * globalEnemyDamage * movingDamageReduction;
+            if(killTime <= rammingImmunityTime * 50 && lastKillType === "Ramming"){
+                damagedealt = 0;
+            }
             switch(damageType){
                 case "DOT":
                     damagedealt *= dotDamageReduction;
@@ -2961,11 +3032,7 @@
                     storedRammingHP += -rammingLosses;
                     break;
                 case "Contact": 
-                    if(killTime > rammingImmunityTime * 50 || lastKillType !== "Ramming"){
-                        damagedealt *= contactDamageReduction;
-                    } else{
-                        damagedealt = 0;
-                    }
+                    damagedealt *= contactDamageReduction;
                     currentDCH = damage * delayedContactHealing * globalEnemyDamage;
                     storedDCH = currentDCH;
                     break;
@@ -2984,7 +3051,7 @@
             }
             health -= damagedealt
             if(storedRammingHP <= 0){
-                storedRammingHP == 0;
+                storedRammingHP = 0;
             }
             if(health > 0){
                 if(damageType != "DOT"){
@@ -3011,7 +3078,7 @@
             bullProperties.splice(id, 1);
             bulletTrackerID.splice(id, 1);
         }
-        function onKillEffects(){
+        function onKillEffects(killx, killy){
             if(deathBurstDuration != 0){
                 playerBuffs.deathBurst = deathBurstDuration;
             }
@@ -3027,6 +3094,19 @@
                 }
                 let tempAimer = new aimer(character.x, character.y, enemies[tempTarget].x, enemies[tempTarget].y);
                 playerShoot(tempAimer.x, tempAimer.y, deathMissleDamage);
+            }
+            if(antiProjectileSize != 0){
+                for(let i = 0; i < bullets.length; i++){
+                    if(bullets[i].eoti != "Player" && distanceCalc(bullets[i].x, bullets[i].y, killx, killy) <= antiProjectileSize * ml/1000){
+                        bulletDestroy(i);
+                        i--;
+                        skillIDCounter++;       
+                        aoes.push(new circlecomponent(killx, killy, antiProjectileSize * ml/2000, ml/100, 'gray', 'gray'));
+                        areass.push(new areasSideStats(100, 0, 0, 'Player', false, false));
+                        aoeTrackerID.push(skillIDCounter);
+                        aoeCycler(aoes.length - 1);
+                    }
+                }
             }
         }
         function playerShoot(aimx, aimy, damagemulti){
@@ -3070,12 +3150,14 @@
                         i--;
                     }
                 }
+                let tempx = enemies[id].x;
+                let tempy = enemies[id].y;
                 enemies.splice(id, 1);
                 ess.splice(id, 1);
                 enemyTrackerID.splice(id, 1);
                 enemyCount--;
                 kills++;
-                onKillEffects()
+                onKillEffects(tempx, tempy)
                 killTime = 0;
                 if(enemyCount == 0 && spawnFinish == true){
                     waveActive = false;
@@ -3374,7 +3456,7 @@
                 }
             }
             if(enemyTrackerID.indexOf(trackerID) !== -1){
-                ess[targetid].shooting = false;
+                ess[enemyTrackerID.indexOf(trackerID)].shooting = false;
             }
         }
         function render(){
