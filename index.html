@@ -34,13 +34,25 @@
         let adrenalBonus = 1;
         let healthDegrade = 0;
         let overhaul = false;
+        let blink = false;
+        let screenWrapping = false;
+        let wrapAvailable = false;
+        let wrapCooldown = 150;
+        let blinkCooldown = 100;
+        let blinkLength = 150;
         let curseChance = 0.005;
         let curseChanceLoss = 0.5;
         let bounceChance = 0;
         let bounceTimes = 0;
         let pierceChance = 0;
+        let maxCharge = 1;
+        let storedCharge = 1;
+        let baseChargeDelay = 400;
         let pierceLoss = 1;
-        let wave = 1; //max 9224 else enemy hp is infinite
+        let wave = 1;
+        let blinkAvailable = false;
+        let movementChoice = false;
+        let shotSpeedChoice = false;
         let fragmentBullets = 0;
         let fragmentDamage = 0.3;
         let recursiveFragments = false; //DO NOT ENABLE THIS THIS IS DEATH IT WILL LITERALLY CRASH CHROME DO NOT DO NOT DO NOT
@@ -97,6 +109,7 @@
         let largeDamageHealing = 0;
         let largeDamageThreshold = 4;
         let projectileIframes = 1;
+        let blinkIframes = 1;
         let storedRammingHP = 0;
         let chainRamming = 1;
         let chainRammingTime = 0.5;
@@ -306,7 +319,32 @@
                         waveDelayCounter = waveDelay * 50;
                     }
                     break;
+                case "Space":
+                    if(pause == false && blink == true && blinkAvailable == true){
+                        if(playerXDirect != 0 || playerYDirect != 0){
+                            let multi = 1;
+                            if(playerXDirect != 0 && playerYDirect != 0){
+                                multi = 0.5;
+                            }
+                            character.x += ml/1000 * blinkLength * multi * playerXDirect;
+                            character.y += ml/1000 * blinkLength * multi * playerYDirect;
+                            if(invulnerable == false){
+                                invulnerable = true;
+                                iframeCycler(blinkIframes);
+                            }
+                            blinkCycler();
+                        }
+                    }
+                    break;
             }
+        }
+        async function blinkCycler(){
+            blinkAvailable = false;
+            let offset = globalCounter;
+            while(globalCounter <= offset + blinkCooldown){
+                await sleep(20)
+            }
+            blinkAvailable = true;
         }
         function movestopper(){
             if(event.code == "KeyW" || event.code == "KeyS"){
@@ -847,7 +885,7 @@
                         this.maxPurchases = 3;
                         this.baseCopies = 80;
                         this.description = function(){
-                            return ["Every enemy you kill through ramming adds 0.5 (+0.5 per stack) to a counter. Taking damage from any non-contact damage source will remove 3 (+1 per stack) from the counter, but it will not go into negatives. At the end of the wave, heal equal to the counter amount.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Every enemy you kill through ramming adds 2 (+2 per stack) to a counter. Taking damage from any projectile will remove 3 (+1 per stack) from the counter, but it will not go into negatives. At the end of the wave, heal equal to the counter amount.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -856,7 +894,7 @@
                             return totalItemList[9].purchased >= 2 && totalItemList[10].purchased >= 1;
                         }
                         this.buy = function(){
-                            rammingGains += 0.5;
+                            rammingGains += 2;
                             if(this.purchased == 0){
                                 rammingLosses += 3;
                             } else{
@@ -1941,7 +1979,8 @@
                             cx.fillRect(xoffset + ml * 0.035 * size, yoffset + ml * 0.035 * size, ml * 0.03 * size, ml * 0.03 * size);
                             cx.lineWidth = ml * 0.0015;
                             cx.strokeStyle = 'red';
-                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);                            cx.shadowColor = 'red';
+                            cx.shadowColor = 'red';
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
                             cx.strokeRect(xoffset + ml * 0.015 * size, yoffset + ml * 0.015 * size, ml * 0.07 * size, ml * 0.07 * size);
                         }
                         break;
@@ -1993,13 +2032,13 @@
                         break;
                     case 47:
                         this.nameGlowColor = "red";
-                        this.name = "Doom Module";
+                        this.name = "Unstable Cannon";
                         this.maxPurchases = 1;
                         this.baseCopies = Infinity;
                         this.boxStyle = 'red';
                         this.boxGlowStyle = 'red';
                         this.description = function(){
-                            return ["Forbidden Upgrade", "Gain 5 projectiles. Increase your shot spread by 15 degrees. Reduce your bullet lifetime by 66%. Reduce your damage by 33%."];
+                            return ["Forbidden Upgrade", "Gain 6 projectiles. You no longer control where you aim. Reduce damage by 50%."];
                         }
                         this.copies = function(){
                             if(Math.random() < curseChance){
@@ -2012,21 +2051,21 @@
                             return true;
                         }
                         this.buy = function(){
-                            playerProjectiles += 5;
-                            bulletDurationMulti /= 3;
-                            shotSpread += 15;
-                            playerDamageMulti /= 1.5;
+                            playerProjectiles += 6;
+                            playerDamageMulti *= 0.5;
+                            shotSpread = 180;
                             curseChance *= curseChanceLoss;
                         }
                         this.icon = function(xoffset, yoffset, size){
-                            cx.fillStyle = 'gray';
-                            cx.shadowColor = 'cyan';
-                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
-                            cx.fillStyle = 'green';
-                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.02 * size);
-                            cx.fillStyle = 'red';
-                            cx.fillRect(xoffset + ml * 0.03 * size, yoffset + ml * 0.035 * size, ml * 0.015 * size, ml * 0.015 * size);
-                            cx.fillRect(xoffset + ml * 0.055 * size, yoffset + ml * 0.035 * size, ml * 0.015 * size, ml * 0.015 * size);
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.04 * size, ml * 0.05 * size, ml * 0.02 * size);
+                            cx.fillRect(xoffset + ml * 0.04 * size, yoffset + ml * 0.025 * size, ml * 0.02 * size, ml * 0.05 * size);
+                            cx.fillStyle = "cyan";
+                            cx.fillRect(xoffset + ml * 0.065 * size, yoffset + ml * 0.04 * size, ml * 0.01 * size, ml * 0.02 * size);
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.04 * size, ml * 0.01 * size, ml * 0.02 * size);
+                            cx.fillRect(xoffset + ml * 0.04 * size, yoffset + ml * 0.065 * size, ml * 0.02 * size, ml * 0.01 * size);
+                            cx.fillRect(xoffset + ml * 0.04 * size, yoffset + ml * 0.025 * size, ml * 0.02 * size, ml * 0.01 * size);
                         }
                         break;
                     case 48:
@@ -2164,6 +2203,191 @@
                             cx.strokeRect(xoffset + ml * 0.05 * size, yoffset + ml * 0.025 * size, ml * 0.025 * size, ml * 0.025 * size);
                             cx.strokeRect(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size, ml * 0.025 * size, ml * 0.025 * size);
                             cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.05 * size, ml * 0.025 * size, ml * 0.025 * size);
+                        }
+                        break;
+                    case 52:
+                        this.name = "Blink Drive";
+                        this.maxPurchases = 1;
+                        this.baseCopies = 150;
+                        this.boxStyle = 'lime';
+                        this.boxGlowStyle = 'lime';
+                        this.description = function(){
+                            return ["Allows you to blink forwards in the direction you are moving by pressing space. Grants brief invulnerability. Has a cooldown of 2 seconds.", "Prevents purchase of Warp Drive."];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[3].purchased >= 3 && movementChoice == false;
+                        }
+                        this.buy = function(){
+                            movementChoice = true;
+                            blink = true;
+                            blinkAvailable = true;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.05 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.beginPath();
+                            cx.strokeStyle = 'cyan';
+                            cx.lineWidth = ml * 0.01 * size;
+                            cx.moveTo(xoffset, yoffset + ml * 0.05 * size);
+                            cx.lineTo(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size);
+                            cx.stroke();
+                        }
+                        break;
+                    case 53:
+                        this.name = "Warp Drive";
+                        this.maxPurchases = 1;
+                        this.baseCopies = 150;
+                        this.boxStyle = 'lime';
+                        this.boxGlowStyle = 'lime';
+                        this.description = function(){
+                            return ["Allows you to wrap around the screen. Has a cooldown of 3 seconds.", "Prevents purchase of Blink Drive."];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[3].purchased >= 3 && movementChoice == false;
+                        }
+                        this.buy = function(){
+                            movementChoice = true;
+                            screenWrapping = true;
+                            wrapAvailable = true;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.08 * size, yoffset + ml * 0.025 * size, ml * 0.02 * size, ml * 0.05 * size);
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset, yoffset + ml * 0.025 * size, ml * 0.02 * size, ml * 0.05 * size);
+                            cx.beginPath();
+                            cx.strokeStyle = 'purple';
+                            cx.shadowColor = 'purple';
+                            cx.lineWidth = ml * 0.01 * size;
+                            cx.moveTo(xoffset + ml * 0.02 * size, yoffset + ml * 0.05 * size);
+                            cx.lineTo(xoffset + ml * 0.08 * size, yoffset + ml * 0.05 * size);
+                            cx.stroke();
+                        }
+                        break;
+                    case 54:
+                        this.name = "Overclock";
+                        this.maxPurchases = 5;
+                        this.baseCopies = 100;
+                        this.description = function(){
+                            return ["Increases attack speed by 10% and shotspread by 2 degrees.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[2].purchased >= 3;
+                        }
+                        this.buy = function(){
+                            shotDelay *= 0.9;
+                            shotSpread += 2;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "orange";
+                            cx.shadowColor = "orange";
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.04 * size, ml * 0.05 * size, ml * 0.02 * size);
+                            cx.fillStyle = "red";
+                            cx.shadowColor = "red";
+                            cx.fillRect(xoffset + ml * 0.065 * size, yoffset + ml * 0.04 * size, ml * 0.01 * size, ml * 0.02 * size);
+                        }
+                        break;
+                    case 55:
+                        this.name = "Dual Cannon";
+                        this.maxPurchases = 1;
+                        this.baseCopies = 150;
+                        this.boxStyle = 'lime';
+                        this.boxGlowStyle = 'lime';
+                        this.description = function(){
+                            return ["Fire an additonal projectile. Increases shot spread by 15 degrees.", "Prevents purchase of Opressive Fire."];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[54].purchased >= 3 && shotSpeedChoice == false;
+                        }
+                        this.buy = function(){
+                            shotSpeedChoice = true;
+                            playerProjectiles += 1;
+                            shotSpread += 15;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.02 * size, ml * 0.05 * size, ml * 0.02 * size);
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.06 * size, ml * 0.05 * size, ml * 0.02 * size);
+                            cx.fillStyle = "cyan";
+                            cx.fillRect(xoffset + ml * 0.065 * size, yoffset + ml * 0.02 * size, ml * 0.01 * size, ml * 0.02 * size);
+                            cx.fillRect(xoffset + ml * 0.065 * size, yoffset + ml * 0.06 * size, ml * 0.01 * size, ml * 0.02 * size);
+                        }
+                        break;
+                    case 56:
+                        this.name = "Opressive Fire";
+                        this.maxPurchases = 1;
+                        this.baseCopies = 150;
+                        this.boxStyle = 'lime';
+                        this.boxGlowStyle = 'lime';
+                        this.description = function(){
+                            return ["Increase attack speed by 35% and reduces shot spread by 5 degrees.", "Prevents purchase of Dual Cannon."];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[54].purchased >= 3 && shotSpeedChoice == false;
+                        }
+                        this.buy = function(){
+                            shotSpeedChoice = true;
+                            shotDelay *= 0.65;
+                            shotSpread -= 5;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.005 * size, yoffset + ml * 0.045 * size, ml * 0.025 * size, ml * 0.01 * size);
+                            cx.fillRect(xoffset + ml * 0.035 * size, yoffset + ml * 0.045 * size, ml * 0.025 * size, ml * 0.01 * size);
+                            cx.fillRect(xoffset + ml * 0.065 * size, yoffset + ml * 0.045 * size, ml * 0.025 * size, ml * 0.01 * size);
+                            cx.fillStyle = "cyan";
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.045 * size, ml * 0.005 * size, ml * 0.01 * size);
+                            cx.fillRect(xoffset + ml * 0.055 * size, yoffset + ml * 0.045 * size, ml * 0.005 * size, ml * 0.01 * size);
+                            cx.fillRect(xoffset + ml * 0.085 * size, yoffset + ml * 0.045 * size, ml * 0.005 * size, ml * 0.01 * size);
+                        }
+                        break;
+                    case 57:
+                        this.name = "Preperation Overcharge"
+                        this.maxPurchases = 3;
+                        this.baseCopies = 150;
+                        this.description = function(){
+                            return ["The longer you wait before firing, the stronger your bullets are. Gains 200% damage every time another bullet would be available, and maximum charge is equal to 500% (+500% per stack) of your base damage. Charge resets between waves. A circle will appear on your character when charge is at max.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){ 
+                            return totalItemList[28].purchased >= 1;
+                        }
+                        this.buy = function(){
+                            if(this.purchased == 0){
+                                maxCharge += 4;
+                            } else{
+                                maxCharge += 5;
+                            }
+                            this.baseCopies += 25;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            for(let i = 0; i < 10; i++){
+                                cx.shadowColor = 'rgb(' + 25 * i + ", 0, 0)";
+                                cx.fillStyle = 'rgb(' + 25 * i + ", 0, 0)";
+                                cx.fillRect(xoffset + ml * 0.009 * size * i + 0.005 * size * ml, yoffset + 0.04 * size * ml, ml * 0.009 * size, ml * 0.02 * size);
+                            }
                         }
                         break;
                     default:
@@ -2681,6 +2905,67 @@
             render();
         }
         resize();
+        async function wrapCycler(){
+            let offset = globalCounter;
+            wrapAvailable = false;
+            while(globalCounter < offset + wrapCooldown){
+                await sleep(20)
+            }
+            wrapAvailable = true;
+        }
+        function playerMoveSequence(){
+            let totalSpeed = playerSpeed;
+            if(damageTime < adrenalTime){
+                totalSpeed *= adrenalBonus;
+            }
+            if(character.x >= 0 && playerXDirect == -1 || character.x <= c.width && playerXDirect == 1){
+                character.x += ml/1000 * totalSpeed * playerXDirect;
+            }
+            if(character.y >= 0 && playerYDirect == -1 || character.y <= c.height && playerYDirect == 1){
+                character.y += ml/1000 * totalSpeed * playerYDirect;
+            }
+            if(character.x < 0){
+                if(screenWrapping == false){
+                    character.x = 0;
+                } else if(wrapAvailable){
+                    character.x = c.width;
+                    wrapCycler();
+                }
+            }
+            if(character.x > c.width){
+                if(screenWrapping == false){
+                    character.x = c.width;
+                } else if(wrapAvailable){
+                    character.x = 0;
+                    wrapCycler();
+                }
+            }
+            if(character.y < 0){
+                if(screenWrapping == false){
+                    character.y = 0;
+                } else if(wrapAvailable){
+                    character.y = c.height;
+                    wrapCycler();
+                }
+            }
+            if(character.y > c.height){
+                if(screenWrapping == false){
+                    character.y = c.height;
+                } else if(wrapAvailable){
+                    character.y = 0;
+                    wrapCycler();
+                }
+            }
+            if(playerXDirect == 0 && playerYDirect == 0){
+                moving = false;
+                movingRamMulti = 1;
+                movingDamageReduction = 1;
+            } else{
+                moving = true;
+                movingRamMulti = 1 + baseSpeedStatDamage * totalSpeed * speedStatMulti;
+                movingDamageReduction = Math.pow(1 - baseSpeedStatResistance, totalSpeed * speedStatMulti);
+            }
+        }
         var gameRunner = setInterval(function generalUpdate(){
             if(pause == false){
                 globalCounter++;
@@ -2693,25 +2978,7 @@
                 if(damageTime >= shieldRegenDelay * 50){
                     shieldHeal(maxShield/(shieldRegenTime * 50))
                 }
-                let totalSpeed = playerSpeed;
-                if(damageTime < adrenalTime){
-                    totalSpeed *= adrenalBonus;
-                }
-                if(character.x > 0 && playerXDirect == -1 || character.x < c.width && playerXDirect == 1){
-                    character.x += ml/1000 * totalSpeed * playerXDirect;
-                }
-                if(character.y > 0 && playerYDirect == -1 || character.y < c.height && playerYDirect == 1){
-                    character.y += ml/1000 * totalSpeed * playerYDirect;
-                }
-                if(playerXDirect == 0 && playerYDirect == 0){
-                    moving = false;
-                    movingRamMulti = 1;
-                    movingDamageReduction = 1;
-                } else{
-                    moving = true;
-                    movingRamMulti = 1 + baseSpeedStatDamage * totalSpeed * speedStatMulti;
-                    movingDamageReduction = Math.pow(1 - baseSpeedStatResistance, totalSpeed * speedStatMulti);
-                }
+                playerMoveSequence();
                 playerBuffs.deathBurst--;
                 if(currentDCH > 0){
                     currentDCH += -storedDCH/(DCHtime * 50);
@@ -2723,14 +2990,7 @@
                     if(squareHitDetector(character.x, character.y, ml/2000 * character.width, ml/2000 * character.height, enemies[i].x, enemies[i].y, ml/2000 * enemies[i].width, ml/2000 * enemies[i].height) == true && invulnerable == false && enemyStatBlock[ess[i].type].contact == true){
                         damagePlayer(enemyStatBlock[ess[i].type].damage, "Contact");
                         ess[i].hp += -(enemyStatBlock[ess[i].type].selfContactDamage * enemyStatBlock[ess[i].type].hp * globalEnemyHP + baseRammingDamage) * rammingDamage * movingRamMulti * playerDamageMulti * additivePlayerDamageMulti;
-                        if(ess[i].hp <= 0){
-                            storedRammingHP += rammingGains;
-                            if(killTime < chainRammingTime * 50){
-                                heal(rammingKillSteal * chainRamming)
-                            } else{
-                                heal(rammingKillSteal)
-                            }
-                        }
+                        onRamEffects()
                         heal(globalLifeSteal);
                         killChecker(i, "Ramming");
                         break;
@@ -2740,7 +3000,14 @@
                     shotCycler();
                     let tempAimer = new aimer(character.x, character.y, mouseX, mouseY);
                     for(let i = 0; i < playerProjectiles; i++){
-                        playerShoot(tempAimer.x, tempAimer.y, 1);
+                        playerShoot(tempAimer.x, tempAimer.y, storedCharge);
+                    }
+                    storedCharge = 1;
+                }
+                if(storedCharge < maxCharge){
+                    storedCharge += baseChargeDelay/shotDelay/25;
+                    if(storedCharge > maxCharge){
+                        storedCharge = maxCharge;
                     }
                 }
                 for(let i = 0; i < lasers.length; i++){
@@ -2949,6 +3216,9 @@
                 aoeCycler(aoes.length - 1);
             }
         }
+        function onRamEffects(){
+
+        }
         function onHitEffects(damage, enemyid, bulletid){
             heal(globalLifeSteal)
             if(fragmentBullets != 0 && bullProperties[bulletid].fragmenting == true){
@@ -3023,7 +3293,6 @@
                     damagedealt *= dotDamageReduction;
                     currentDCH = 0;
                     storedDCH = 0;
-                    storedRammingHP += -rammingLosses;
                     break;
                 case "Projectile":
                     damagedealt *= projectileDamageReduction;
@@ -3108,6 +3377,14 @@
                     }
                 }
             }
+            if(lastKillType == "Ramming"){
+                storedRammingHP += rammingGains;
+                if(killTime < chainRammingTime * 50){
+                    heal(rammingKillSteal * chainRamming)
+                } else{
+                    heal(rammingKillSteal)
+                }
+            }
         }
         function playerShoot(aimx, aimy, damagemulti){
             let bouncy = false;
@@ -3118,7 +3395,7 @@
             if(Math.random() < pierceChance){
                 piercing = true;
             }
-            if(shotSpread != 0){
+            if(shotSpread > 0){
                 let shotAngle = Math.atan2(aimx, aimy) * 180/Math.PI + randomInt(-shotSpread, shotSpread);
                 aimx = Math.sin(shotAngle/180 * Math.PI)
                 aimy = Math.cos(shotAngle/180 * Math.PI)
@@ -3459,6 +3736,27 @@
                 ess[enemyTrackerID.indexOf(trackerID)].shooting = false;
             }
         }
+        function playerRender(){
+            character.update();
+            cx.lineWidth = ml/1000;
+            if(blinkAvailable){
+                cx.strokeStyle = 'cyan';
+                cx.shadowColor = 'cyan';
+                cx.strokeRect(character.x - character.width * ml/2000, character.y - character.height * ml/2000, character.width * ml/1000, character.height * ml/1000)
+            }
+            if(wrapAvailable){
+                cx.strokeStyle = 'purple';
+                cx.shadowColor = 'purple';
+                cx.strokeRect(character.x - character.width * ml/2000, character.y - character.height * ml/2000, character.width * ml/1000, character.height * ml/1000)
+            }
+            if(storedCharge == maxCharge && maxCharge > 1){
+                cx.beginPath();
+                cx.fillStyle = 'cyan';
+                cx.shadowColor = 'cyan';
+                cx.arc(character.x, character.y, ml/4000 * character.width, 0, Math.PI * 2);
+                cx.fill();
+            }
+        }
         function render(){
             cx.globalAlpha = standardAlpha;
             cx.clearRect(0, 0, c.width, c.height);
@@ -3535,7 +3833,7 @@
             if(invulnerable == true){
                 cx.globalAlpha = standardAlpha * 0.1;
             }
-            character.update();
+            playerRender();
             cx.globalAlpha = standardAlpha;
             cx.textAlign = "center";
             if(waveActive == false){
