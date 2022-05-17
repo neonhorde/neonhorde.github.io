@@ -11,7 +11,7 @@
         const c = document.getElementById("gamescreen");
         const cx = c.getContext("2d");
         let ml;
-        let devMode = false;
+        let devMode = true;
         let devwave = 20;
         let playerSize = 25;
         let bulletSize = 10;
@@ -2366,12 +2366,12 @@
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
                         this.description = function(){
-                            return ["The longer you wait before firing, the stronger your bullets are. Gains 200% damage every time another bullet would be available, and maximum charge is equal to 500% (+500% per stack) of your base damage. Charge resets between waves. A circle will appear on your character when charge is at max.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["The longer you wait before firing, the better your bullets are. Gains 200% damage and 100% duration every time another bullet would be available, and maximum charge is equal to 500% (+500% per stack) of your base damage. Charge resets between waves. A circle will appear on your character that shows charge progress.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
                         }
-                        this.requirements = function(){ 
+                        this.requirements = function(){
                             return totalItemList[28].purchased >= 1;
                         }
                         this.buy = function(){
@@ -3000,11 +3000,11 @@
                     shotCycler();
                     let tempAimer = new aimer(character.x, character.y, mouseX, mouseY);
                     for(let i = 0; i < playerProjectiles; i++){
-                        playerShoot(tempAimer.x, tempAimer.y, storedCharge);
+                        playerShoot(tempAimer.x, tempAimer.y, storedCharge, storedCharge/2 + 0.5);
                     }
                     storedCharge = 1;
                 }
-                if(storedCharge < maxCharge){
+                if(storedCharge < maxCharge && shotAvailable == true){
                     storedCharge += baseChargeDelay/shotDelay/25;
                     if(storedCharge > maxCharge){
                         storedCharge = maxCharge;
@@ -3362,18 +3362,18 @@
                     }
                 }
                 let tempAimer = new aimer(character.x, character.y, enemies[tempTarget].x, enemies[tempTarget].y);
-                playerShoot(tempAimer.x, tempAimer.y, deathMissleDamage);
+                playerShoot(tempAimer.x, tempAimer.y, deathMissleDamage, 1);
             }
             if(antiProjectileSize != 0){
+                skillIDCounter++;
+                aoes.push(new circlecomponent(killx, killy, antiProjectileSize * ml/2000, ml/100, 'gray', 'gray'));
+                areass.push(new areasSideStats(100, 0, 0, 'Player', false, false));
+                aoeTrackerID.push(skillIDCounter);
+                aoeCycler(aoes.length - 1);
                 for(let i = 0; i < bullets.length; i++){
                     if(bullets[i].eoti != "Player" && distanceCalc(bullets[i].x, bullets[i].y, killx, killy) <= antiProjectileSize * ml/1000){
                         bulletDestroy(i);
-                        i--;
-                        skillIDCounter++;       
-                        aoes.push(new circlecomponent(killx, killy, antiProjectileSize * ml/2000, ml/100, 'gray', 'gray'));
-                        areass.push(new areasSideStats(100, 0, 0, 'Player', false, false));
-                        aoeTrackerID.push(skillIDCounter);
-                        aoeCycler(aoes.length - 1);
+                        i--;   
                     }
                 }
             }
@@ -3386,7 +3386,7 @@
                 }
             }
         }
-        function playerShoot(aimx, aimy, damagemulti){
+        function playerShoot(aimx, aimy, damagemulti, durationmulti){
             let bouncy = false;
             let piercing = false;
             if(Math.random() < bounceChance){
@@ -3400,7 +3400,7 @@
                 aimx = Math.sin(shotAngle/180 * Math.PI)
                 aimy = Math.cos(shotAngle/180 * Math.PI)
             }
-            bss.push(new bulletSideStats(aimx, aimy, playerDamage * damagemulti, bulletSpeed, bulletDuration * bulletDurationMulti, "Player"));
+            bss.push(new bulletSideStats(aimx, aimy, playerDamage * damagemulti, bulletSpeed, bulletDuration * bulletDurationMulti * durationmulti, "Player"));
             bullets.push(new squarecomponent(bulletSize, bulletSize, character.x, character.y, "white", "cyan"));
             bullProperties.push(new bulletProperties(looperBullets, bouncy, bounceTimes, true, piercing));
             bulletTrackerID.push(bulletCounter);
@@ -3749,12 +3749,18 @@
                 cx.shadowColor = 'purple';
                 cx.strokeRect(character.x - character.width * ml/2000, character.y - character.height * ml/2000, character.width * ml/1000, character.height * ml/1000)
             }
-            if(storedCharge == maxCharge && maxCharge > 1){
+            if(maxCharge > 1){
                 cx.beginPath();
-                cx.fillStyle = 'cyan';
                 cx.shadowColor = 'cyan';
-                cx.arc(character.x, character.y, ml/4000 * character.width, 0, Math.PI * 2);
-                cx.fill();
+                cx.arc(character.x, character.y, ml/4000 * character.width * storedCharge/maxCharge, 0, Math.PI * 2);
+                if(storedCharge == maxCharge){
+                    cx.fillStyle = 'cyan';
+                    cx.fill();
+                } else{
+                    cx.strokeStyle = 'cyan';
+                    cx.lineWidth = ml/500;
+                    cx.stroke();
+                }
             }
         }
         function render(){
