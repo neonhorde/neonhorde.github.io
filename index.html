@@ -12,7 +12,7 @@
         const cx = c.getContext("2d");
         let ml;
         let devMode = false;
-        let devwave = 20;
+        let devwave = 4;
         let playerSize = 25;
         let bulletSize = 10;
         let playerYDirect = 0;
@@ -203,19 +203,29 @@
         function clickhandler(){
             shooting = true;
             if(inspecting != 0 && pause == true && skillPoints > 0 && offeredItems[inspecting - 1] !== undefined && inspectingTarget == 1){
-                skillPoints--;
-                offeredItems[inspecting - 1].buy();
-                if(totalItemList[offeredItems[inspecting - 1].trackerID].purchased == 0){
-                    purchasedItems.push(offeredItems[inspecting - 1])
-                }
-                totalItemList[offeredItems[inspecting - 1].trackerID].purchased++;
-                itemRoll();
+                purchase(inspecting - 1)
             } else if(inspectingTarget == 3){
                 if (pause == true && rerolls > 0){
-                    itemRoll();
-                    rerolls--;
+                    reroll()
                 }
             }
+        }
+        function reroll(){
+            for(let i = 0; i < offeredItems.length; i++){
+                totalItemList[offeredItems[i].trackerID].baseCopies = Math.round(totalItemList[offeredItems[i].trackerID].baseCopies * 0.8)
+            }
+            itemRoll();
+            rerolls--;
+        }
+        function purchase(target){
+            skillPoints--;
+            offeredItems[target].buy();
+            totalItemList[offeredItems[target].trackerID].baseCopies = Math.round(totalItemList[offeredItems[target].trackerID].baseCopies * 1.2)
+            if(totalItemList[offeredItems[target].trackerID].purchased == 0){
+                purchasedItems.push(offeredItems[target])
+            }
+            totalItemList[offeredItems[target].trackerID].purchased++;
+            itemRoll();
         }
         function shotstopper(){
             shooting = false;
@@ -266,13 +276,7 @@
                 case "Digit4":
                     let target = parseInt(event.key) - 1;
                     if(skillPoints > 0 && pause == true && offeredItems[target] !== undefined){
-                        skillPoints--;
-                        offeredItems[target].buy();
-                        if(totalItemList[offeredItems[target].trackerID].purchased == 0){
-                            purchasedItems.push(offeredItems[target])
-                        }
-                        totalItemList[offeredItems[target].trackerID].purchased++;
-                        itemRoll();
+                        purchase(target)
                     }
                     break;
                 case "KeyW":
@@ -298,8 +302,7 @@
                     if(gameOver == true){
                         location.reload();
                     } else if (pause == true && rerolls > 0){
-                        itemRoll();
-                        rerolls--;
+                        reroll()
                     }
                     break;
                 case "KeyE":
@@ -432,7 +435,6 @@
                         }
                         this.buy = function(){
                             playerDamage++;
-                            this.baseCopies += 10;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "gray";
@@ -462,7 +464,6 @@
                         }
                         this.buy = function(){
                             xpGain += 0.1;
-                            this.baseCopies += 10;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -500,7 +501,6 @@
                         }
                         this.buy = function(){
                             shotDelay = shotDelay * 0.85;
-                            this.baseCopies += 10;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -525,7 +525,6 @@
                         }
                         this.buy = function(){
                             playerSpeed += 1;
-                            this.baseCopies += 10;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "gray";
@@ -553,7 +552,6 @@
                         }
                         this.buy = function(){
                             additionalSkillPoints++;
-                            this.baseCopies += 20;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -577,7 +575,6 @@
                         }
                         this.buy = function(){
                             bulletSpeed += 5;
-                            this.baseCopies += 10;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "gray";
@@ -603,7 +600,6 @@
                         }
                         this.buy = function(){
                             deathBurstDuration += 37.5;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "gray";
@@ -647,7 +643,6 @@
                         }
                         this.buy = function(){
                             extraShotChance += 7;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "black";
@@ -673,7 +668,6 @@
                         this.buy = function(){
                             health += 10;
                             maxHealth += 10;
-                            this.baseCopies += 10;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "gray";
@@ -696,7 +690,6 @@
                         }
                         this.buy = function(){
                             roundRegen += 4;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -724,7 +717,6 @@
                         this.buy = function(){
                             contactDamageReduction *= 0.8;
                             baseRammingDamage += 10;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -754,7 +746,6 @@
                         }
                         this.buy = function(){
                             delayedContactHealing += 0.25;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -789,7 +780,6 @@
                         }
                         this.buy = function(){
                             speedStatMulti++;
-                            this.baseCopies += 20;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -836,7 +826,6 @@
                         this.buy = function(){
                             DCHtime--;
                             baseRammingDamage += 10;
-                            this.baseCopies += 20;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -863,7 +852,6 @@
                         this.buy = function(){
                             rammingDamage += 0.1;
                             baseRammingDamage += 15;
-                            this.baseCopies += 20;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -900,7 +888,6 @@
                             } else{
                                 rammingLosses += 1;
                             }
-                            this.baseCopies += 15;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -984,7 +971,6 @@
                             return totalItemList[13].purchased >= 1 && totalItemList[9].purchased >= 1;
                         }
                         this.buy = function(){
-                            this.baseCopies += 20;
                             rammingDamage += 0.08;
                             rammingKillSteal += 2;
                         }
@@ -1036,7 +1022,6 @@
                             return totalItemList[16].purchased >= 1;
                         }
                         this.buy = function(){
-                            this.baseCopies += 40;
                             chainRamming += 0.5;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -1076,7 +1061,6 @@
                             return totalItemList[16].purchased >= 1;
                         }
                         this.buy = function(){
-                            this.baseCopies += 40;
                             rammingImmunityTime += 0.2;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -1114,7 +1098,6 @@
                         }
                         this.buy = function(){
                             combatRegen += 0.01;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -1152,7 +1135,6 @@
                             } else{
                                 levelRegen += 8;
                             }
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -1180,7 +1162,6 @@
                         }
                         this.buy = function(){
                             deathMissleDamage += 0.25;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -1215,7 +1196,6 @@
                         }
                         this.buy = function(){
                             critChance += 0.1;
-                            this.baseCopies += 20;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.strokeStyle = "red";
@@ -1248,7 +1228,6 @@
                         }
                         this.buy = function(){
                             maxAccelBonus += 0.5;
-                            this.baseCopies += 20;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "gray";
@@ -1278,7 +1257,6 @@
                                 bounceChance += 0.1;
                             }
                             bounceTimes++;
-                            this.baseCopies += 20;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "blue";
@@ -1301,7 +1279,6 @@
                         }
                         this.buy = function(){
                             bulletDuration += 10;
-                            this.baseCopies += 20;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "gray";
@@ -1327,7 +1304,6 @@
                         }
                         this.buy = function(){
                             fragmentBullets++;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -1352,7 +1328,6 @@
                         }
                         this.buy = function(){
                             pierceChance += 0.15;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -1381,7 +1356,6 @@
                         this.buy = function(){
                             bounceTimes++;
                             bulletDuration += 5;
-                            this.baseCopies += 30;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "blue";
@@ -1404,7 +1378,6 @@
                         }
                         this.buy = function(){
                             fragmentDamage += 0.1;
-                            this.baseCopies += 35;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -1435,7 +1408,6 @@
                         }
                         this.buy = function(){
                             pierceLoss -= 0.125;
-                            this.baseCopies += 35;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -1507,9 +1479,8 @@
                             return totalItemList[8].purchased >= 1 && totalItemList[1].purchased >= 2;
                         }
                         this.buy = function(){
-                            shield += 6
-                            maxShield += 6
-                            this.baseCopies += 20
+                            shield += 6;
+                            maxShield += 6;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -1537,8 +1508,7 @@
                             return totalItemList[33].purchased >= 2 && totalItemList[2].purchased >= 1;
                         }
                         this.buy = function(){
-                            shieldAttackSpeedBonus += 0.15
-                            this.baseCopies += 25
+                            shieldAttackSpeedBonus += 0.15;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -1576,7 +1546,6 @@
                             } else{
                                 critShadowChance += 0.05;
                             }
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.shadowColor = "white";
@@ -1613,7 +1582,6 @@
                         }
                         this.buy = function(){
                             largeDamageHealing += 0.5;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "gray";
@@ -1654,7 +1622,6 @@
                             } else{
                                 critAoeDuration += 0.5;
                             }
-                            this.baseCopies += 30;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "gray";
@@ -1686,7 +1653,6 @@
                         this.buy = function(){
                             critChance += 0.05
                             critDamage += 0.15
-                            this.baseCopies += 30;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.strokeStyle = "cyan";
@@ -1724,7 +1690,6 @@
                         }
                         this.buy = function(){
                             shieldBreakAoeDamage += 1.5
-                            this.baseCopies += 30;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -2120,7 +2085,6 @@
                         }
                         this.buy = function(){
                             adrenalBonus += 0.4;
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -2155,7 +2119,6 @@
                         }
                         this.buy = function(){
                             antiProjectileSize += 60;
-                            this.baseCopies += 35;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = 'gray';
@@ -2190,7 +2153,6 @@
                         }
                         this.buy = function(){
                             projectileDamageReduction *= 0.9;
-                            this.baseCopies += 35;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -2366,7 +2328,7 @@
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
                         this.description = function(){
-                            return ["The longer you wait before firing, the better your bullets are. Gains 200% damage and 100% duration every time another bullet would be available, and maximum charge is equal to 500% (+500% per stack) of your base damage. Charge resets between waves. A circle will appear on your character that shows charge progress.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["The longer you wait before firing, the better your bullets are. Gains 200% damage and 100% duration every time another bullet would be available, and maximum charge is equal to 500% (+500% per stack) and 250% (+250% stack) respectively of your base values. Charge resets between waves. A circle will appear on your character that shows charge progress.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -2380,7 +2342,6 @@
                             } else{
                                 maxCharge += 5;
                             }
-                            this.baseCopies += 25;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             for(let i = 0; i < 10; i++){
@@ -3062,7 +3023,7 @@
                     } else{
                         if(circleSquareHitDetector(character.x, character.y, ml/2000 * character.width, ml/2000 * character.height, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000) && areass[i].damage > 0){
                             if (areass[i].eoti == 'Curse'){
-                                damagePlayer(maxHealth, undefined);
+                                damagePlayer(Infinity, undefined);
                             } else{
                                 damagePlayer(areass[i].damage, "DOT");
                             }
