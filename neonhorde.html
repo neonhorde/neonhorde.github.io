@@ -19,7 +19,7 @@
         var devMode = false; //this is mostly just used for testing. starts you in the shop with a ton of coins, i just use it to test new items
         var gameMode = 0; //0 = standard, 1 = random, 2 = classic+
         //these mess with enemy scaling, should be self explanatory.
-        var enemyHpPerWave = 1.75;
+        var enemyHpPerWave = 2;
         var enemyDMGPerWave = 0.8;
         //these increase the strength of items
         var hpPerPoint = 4;
@@ -82,7 +82,7 @@
         var supplyPrice = 5000;
         var contingencyPrice = 4000;
         //these are base stats
-        var bullSpeed = 20; //Normally unchangeable in game, if you want you can change it
+        var bullSpeed = 30; //Normally unchangeable in game, if you want you can change it
         var attackSpeed = 10; //Decreasing this increases your attack speed. fires once every x frames, values below 0 do nothing extra.
         var playerSpeed = 6; //Again, shown as double this in game
         var maxHealth = 25;
@@ -100,6 +100,7 @@
         var doubleshot = false;
         var retaliationStage = 0; //1 = retaliation, 2 = destroyer armor, 3 = goliath armor, 4 = totality shield, 5 = sentinal aura
         var dash = 0; //1 = blink, 2 = plasmoid trail, 3 = burning destruction
+        var statSpecial = 0; //0 = normal, 1 = bullet speed boost, 2 = iframes boost, 3 = item stat boost
         var knockback = false;
         var shockwave = 0; //1 = engine overload, 2 = pulse wave
         var shockwaveDamage = false;
@@ -175,7 +176,6 @@
         var mutMax = 1;
         var uniqueCap = 0;
         var originalDroneCount = 0;
-        var laserActive = false;
         var updateColor = "red";
         var enemyPerWave = 10;
         var ml = 0;
@@ -341,10 +341,20 @@
                 mutMax += 1.25;
             }
         }
-        if((4 + wave/3) * eSpeedMulti > 15){
+        if(wave > 22){
             var enemySpeed = 15;
         } else{
-            var enemySpeed = 4 + wave/3;
+            var enemySpeed = 4 + wave/2;
+        }
+        if(statSpecial > 0){
+            bullSpeed = bullSpeed * 2;
+        }
+        if(statSpecial > 1){
+            iFrames = iFrames * 1.5;
+        }
+        if(statSpecial > 2){
+            minPoints += 2;
+            maxPoints += 3;
         }
         if(deathMode == true){
             enemyPairs += 9;
@@ -1430,9 +1440,8 @@
             enemyY.splice(enemyID, 1);
             enemyHP.splice(enemyID, 1);
             enemyMulti.splice(enemyID, 1);
-            enemyStatus.splice(enemyID, 1);
-            cyCoin += Math.round((8 + wave * 2) * moneyGain * itemCoinGain);
-            totalCoins += cyCoin - totalKills;
+            cyCoin += Math.round((9 + wave) * moneyGain * itemCoinGain);
+            totalCoins += Math.round((9 + wave) * moneyGain * itemCoinGain);
             kills++;
             totalKills++;
             enemies--;
@@ -1443,8 +1452,8 @@
         setInterval(function gameUpdate(){
             if(gameState != 3 && pause == false){
                 for(let i = 0; i < bullXPos.length; i++){
-                    bullXPos[i] += bullXMomentum[i] * bullSpeed * ml/1500;
-                    bullYPos[i] += bullYMomentum[i] * bullSpeed * ml/1500;
+                    bullXPos[i] += bullXMomentum[i] * bullSpeed * ml/1300;
+                    bullYPos[i] += bullYMomentum[i] * bullSpeed * ml/1300;
                 }
                 for(let i = 0; i < laserY.length; i++){
                     laserY[i] += c.height/contingencySpeed;
@@ -1456,6 +1465,20 @@
                     let tempSpeedMulti = 1;
                     if(enemyStatus[enemyCycler] == 1){
                         tempSpeedMulti = 0.5;
+                    }
+                    if(stunCounter > stunLength && cloaked == false || controllerMode == true && stunCounter > stunLength){
+                        enemyX[enemyCycler] += (playerX - enemyX[enemyCycler])/(Math.abs(playerY - enemyY[enemyCycler]) + Math.abs(playerX - enemyX[enemyCycler])) * enemySpeed/enemyMulti[enemyCycler] * eSpeedMulti * ml/1300 * tempSpeedMulti;
+                        enemyY[enemyCycler] += (playerY - enemyY[enemyCycler])/(Math.abs(playerY - enemyY[enemyCycler]) + Math.abs(playerX - enemyX[enemyCycler])) * enemySpeed/enemyMulti[enemyCycler] * eSpeedMulti * ml/1300 * tempSpeedMulti;
+                    } else if (stunDot == true && stunCounter < stunLength){
+                        enemyHP[enemyCycler] += -damage/stunDamage * bloodDmgMulti * damageMulti;
+                        if(stunCounter % 2 == 0){
+                            enemyX[enemyCycler] += ml/500;
+                        } else{
+                            enemyX[enemyCycler] += -ml/500;
+                        }
+                        if(enemyHP[enemyCycler] <= 0){
+                            kill(enemyCycler);
+                        }
                     }
                     if(dash > 1 && dashCd <= dashDuration){
                         if(enemyX[enemyCycler] + ml/40 + 10 > Math.min(dashStartX, dashEndX) && enemyX[enemyCycler] - ml/40 - 10 < Math.max(dashStartX, dashEndX) && enemyY[enemyCycler] + ml/40 + 10 > Math.min(dashStartY, dashEndY) && enemyY[enemyCycler] - ml/40 - 10 < Math.max(dashStartY, dashEndY) && diagonalDash == false || diagonalDash == true && enemyX[enemyCycler] + ml/40 + 10 > Math.min(dashStartX, dashEndX) && enemyX[enemyCycler] - ml/40 - 10 < Math.max(dashStartX, dashEndX) && Math.abs(enemyX[enemyCycler] - dashStartX) * Math.sign(dashEndY - dashStartY) + ml/30 > enemyY[enemyCycler] - dashStartY && Math.abs(enemyX[enemyCycler] - dashStartX) * Math.sign(dashEndY - dashStartY) - ml/30 < enemyY[enemyCycler] - dashStartY){
@@ -1519,20 +1542,6 @@
                                 bullYMomentum.splice(i, 1);
                                 bulletProperties.splice(i, 1);
                             }
-                        }
-                    }
-                    if(stunCounter > stunLength && cloaked == false || controllerMode == true && stunCounter > stunLength){
-                        enemyX[enemyCycler] += (playerX - enemyX[enemyCycler])/(Math.abs(playerY - enemyY[enemyCycler]) + Math.abs(playerX - enemyX[enemyCycler])) * enemySpeed/enemyMulti[enemyCycler] * eSpeedMulti * ml/1300 * tempSpeedMulti;
-                        enemyY[enemyCycler] += (playerY - enemyY[enemyCycler])/(Math.abs(playerY - enemyY[enemyCycler]) + Math.abs(playerX - enemyX[enemyCycler])) * enemySpeed/enemyMulti[enemyCycler] * eSpeedMulti * ml/1300 * tempSpeedMulti;
-                    } else if (stunDot == true && stunCounter < stunLength){
-                        enemyHP[enemyCycler] += -damage/stunDamage * bloodDmgMulti * damageMulti;
-                        if(stunCounter % 2 == 0){
-                            enemyX[enemyCycler] += ml/500;
-                        } else{
-                            enemyX[enemyCycler] += -ml/500;
-                        }
-                        if(enemyHP[enemyCycler] <= 0){
-                            kill(enemyCycler);
                         }
                     }
                 }
@@ -1651,6 +1660,11 @@
             supplyX = Math.random() * c.width;
             supplyY = Math.random() * c.height;
             enemyDMG = enemyDMGPerWave * (wave + Math.max(0, wave - 9) + Math.max(0, wave- 19)) + 1.5;
+            if(wave < 22){
+                enemySpeed = 4 + wave/2;
+            } else{
+                enemySpeed = 15;
+                }
             playerX = c.width/2 - ml/80;
             playerY = c.height/2 - ml/80;
             if(health + roundRegen * roundRegenMulti > maxHealth){
@@ -1665,11 +1679,6 @@
             } else if(wave > 5 && wave <= 20){
                 mutMin += -0.025;
                 mutMin += 0.05;
-            }
-            if((4 + wave/3) * eSpeedMulti > 15){
-                var enemySpeed = 15;
-            } else{
-                var enemySpeed = 4 + wave/3;
             }
             if (wave % 3 == 0){
                 enemyDelay--;
@@ -2398,7 +2407,7 @@
                     descriptionHandler("Burning Destruction", "Enhances Blink. The damage effect lasts twice as long and it deals 33% more damage.", dash3Price, "white", "cyan");
                     break;
                 case 15:
-                    descriptionHandler("Bullet Thrusters", "Doubles the speed at which your bullets travel.", statSpecialPrice, "gray", "gray");
+                    descriptionHandler("Bullet Thrusters", "Doubles the speed at which your bullets travel.", statSpecialPrice, "Orange", "Yellow");
                     break;
                 case 16:
                     descriptionHandler("Hyper Shields", "Makes your damage and dash iframes last 1.5x longer.", statSpecial2Price, "green", "darkgreen");
@@ -3307,8 +3316,8 @@
         }
         function droneShooter(){
                 for(let i = 0; i < droneX.length; i++){
-                    droneXTarget[i] = 10000;
-                    droneYTarget[i] = 10000;
+                    droneXTarget[i] = 100000;
+                    droneYTarget[i] = 100000;
                     for(let t = 0; t < enemyX.length; t++){
                         if(Math.abs(enemyX[t] - droneX[i]) + Math.abs(enemyY[t] - droneY[i]) <= Math.abs(droneXTarget[i] - droneX[i]) + Math.abs(droneYTarget[i] - droneY[i])){
                             droneXTarget[i] = enemyX[t] + ml/100;
