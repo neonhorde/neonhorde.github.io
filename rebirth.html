@@ -2503,6 +2503,7 @@
                             curseChanceLoss = 1;
                         }
                         this.icon = function(xoffset, yoffset, size){
+                            this.available = false;
                             cx.fillStyle = 'maroon';
                             cx.shadowColor = 'darkred';
                             cx.fillRect(xoffset + ml * 0.048 * size, yoffset + ml * 0.025 * size, ml * 0.004 * size, ml * 0.05 * size);
