@@ -11,8 +11,9 @@
         const c = document.getElementById("gamescreen");
         const cx = c.getContext("2d");
         let ml;
+        let chaosMode = false;
         let devMode = false;
-        let devwave = 4;
+        let devwave = 40;
         let playerSize = 25;
         let bulletSize = 10;
         let playerYDirect = 0;
@@ -2486,16 +2487,18 @@
                         this.nameGlowColor = 'purple';
                         this.maxPurchases = 1;
                         this.baseCopies = 10;
+                        this.available = true;
                         this.description = function(){
-                            return ["Massively increases your chances of finding cursed items. Purchasing a cursed item no longer reduces your chance to find another."];
+                            return ["Massively increases your chances of finding forbidden items. Purchasing a forbidden item no longer reduces your chance to find another. Take double damage.", "This item must be purchased now, as it shall never appear again."];
                         }
                         this.copies = function(){
                             return this.baseCopies;
                         }
                         this.requirements = function(){
-                            return totalItemList[4].purchased >= 1 && curseChance < baseCurseChance;
+                            return totalItemList[4].purchased >= 1 && curseChance < baseCurseChance && this.available == true;
                         }
                         this.buy = function(){
+                            damageReduction *= 2;
                             curseChance = 0.02;
                             curseChanceLoss = 1;
                         }
@@ -2860,8 +2863,8 @@
                         this.minWave = 1;
                         this.shotMinAngle = 0;
                         this.shotMaxAngle = 360;
-                        this.angleOffset = 180;
-                        this.cycleCount = 360;
+                        this.angleOffset = 15;
+                        this.cycleCount = 5;
                         this.projectileDuration = 500;
                         this.burstChange = true;
                         this.maxWave = Infinity;
@@ -2872,11 +2875,11 @@
                         }
                         this.reward = Infinity;
                         this.weight = 0;
-                        this.shotDelay = 1000;
+                        this.shotDelay = 100;
                         this.projectileSize = 10;
                         this.projectileSpeed = 10;
                         this.followDistance = 0.1;
-                        this.burst = 360;
+                        this.burst = 1;
                         this.burstDelay = 0;
                         this.shotIterations = 1;
                         this.iterationsDelay = 0;
@@ -3892,7 +3895,9 @@
         }
         function render(){
             cx.globalAlpha = standardAlpha;
-            cx.clearRect(0, 0, c.width, c.height);
+            if(chaosMode == false){
+                cx.clearRect(0, 0, c.width, c.height);
+            }
             cx.shadowBlur = 8;
             for(let i = 0; i < bullets.length; i++){
                 if(bss[i].owner == "Player"){
