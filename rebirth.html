@@ -13,7 +13,7 @@
         let ml;
         let chaosMode = false;
         let devMode = false;
-        let devwave = 40;
+        let devwave = 30;
         let playerSize = 25;
         let bulletSize = 10;
         let playerYDirect = 0;
@@ -24,13 +24,19 @@
         let selfBulletDamage = false;
         let shotSpread = 0;
         let shotSpreadMulti = 1;
+        let pierceRedirectChance = 0;
         let movingRamMulti = 1;
         let movingDamageReduction = 1;
         let shotDelay = 400;
         let pauseDelay = 0;
+        let resilienceChargeGuarenteed = false;
+        let piercingGuarenteedThreshold = 0.5;
         let curseCircleSize = 70;
         let curseCircleSpeed = 0.9; 
         let globalLifeSteal = 0;
+        let controlMode = false;
+        let controlModeActive = false;
+        let canShoot = true;
         let globalCounter = 0;
         let adrenalTime = 100;
         let adrenalBonus = 1;
@@ -51,7 +57,7 @@
         let maxCharge = 1;
         let storedCharge = 1;
         let baseChargeDelay = 400;
-        let pierceLoss = 1;
+        let pierceLoss = 0.5;
         let wave = 1;
         let blinkAvailable = false;
         let movementChoice = false;
@@ -273,6 +279,15 @@
         }
         function keyhandler(){
             switch(event.code){
+                case "KeyC":
+                    if(controlMode){
+                        if(controlModeActive){
+                            controlModeActive = false;
+                        } else{
+                            controlModeActive = true;
+                        }
+                    }
+                    break;
                 case "Digit1":
                 case "Digit2":
                 case "Digit3":
@@ -1321,7 +1336,7 @@
                         this.maxPurchases = 3;
                         this.baseCopies = 150;
                         this.description = function(){
-                            return ["Bullets have a 15% (+15% per stack) to be resilient, meaning they will only be destroyed if the enemy they strike does not die. If they do kill an enemy, they will pierce through but lose damage equal to the hp of the enemy remaining when the bullet struck. Resets growing shot bonus.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Bullets have a 15% (+15% per stack) to be resilient, causing them to pierce. However, they will lose 50% of their damage each time they pierce an enemy. This resets the growing shot bonus.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -1398,10 +1413,10 @@
                         break;
                     case 31:
                         this.name = "Friction Bypass";
-                        this.maxPurchases = 4;
+                        this.maxPurchases = 3;
                         this.baseCopies = 200;
                         this.description = function(){
-                            return ["Resilient bullets lose 12.5% less damage, additively, per stack upon piercing.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                            return ["Resilient bullets lose 10% less damage, additively, per stack upon piercing.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
                         }
                         this.copies = function(){
                             return this.baseCopies;
@@ -1410,7 +1425,7 @@
                             return totalItemList[28].purchased >= 2;
                         }
                         this.buy = function(){
-                            pierceLoss -= 0.125;
+                            pierceLoss += 0.1;
                         }
                         this.icon = function(xoffset, yoffset, size){
                             cx.fillStyle = "white";
@@ -2513,6 +2528,153 @@
                             cx.fillRect(xoffset + ml * 0.052 * size, yoffset + ml * 0.025 * size, ml * 0.04 * size, ml * 0.05 * size);
                         }
                         break;
+                    case 62:
+                        this.nameGlowColor = "red";
+                        this.name = "Hidden Power";
+                        this.maxPurchases = 1;
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Deal double damage and recieve half damage. However, you can no longer shoot."];
+                        }
+                        this.copies = function(){
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            damageReduction *= 0.5;
+                            playerDamageMulti *= 2;
+                            canShoot = false;
+                            curseChance *= curseChanceLoss;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            let color = "rgb(" + randomInt(0, 256) + ", " + randomInt(0, 256) + ", " + randomInt(0, 256) + ")";
+                            cx.fillStyle = "black";
+                            cx.shadowColor = color;
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.beginPath();
+                            cx.lineWidth = ml/1000;
+                            cx.strokeStyle = color;
+                            cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size);
+                            cx.lineTo(xoffset + ml * 0.075 * size, yoffset + ml * 0.075 * size);
+                            cx.moveTo(xoffset + ml * 0.075 * size, yoffset + ml * 0.025 * size);
+                            cx.lineTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.075 * size);
+                            cx.stroke();
+                        }
+                        break;
+                    case 63:
+                        this.name = "Control Mode";
+                        this.maxPurchases = 1;
+                        this.baseCopies = 150;
+                        this.description = function(){
+                            return ["Press C to toggle control mode. While in control mode, you move at 1/3 speed. This does not reduce bonuses given by speed dependent items while active."];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[49].purchased >= 2;
+                        }
+                        this.buy = function(){
+                            controlMode = true;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.strokeStyle = "blue";
+                            cx.shadowColor = "blue";
+                            cx.lineWidth = ml * 0.002;
+                            cx.strokeRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.beginPath();
+                            cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.05 * size);
+                            cx.lineTo(xoffset, yoffset + ml * 0.05 * size);
+                            cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.03 * size);
+                            cx.lineTo(xoffset, yoffset + ml * 0.03 * size);
+                            cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.07 * size);
+                            cx.lineTo(xoffset, yoffset + ml * 0.07 * size);
+                            cx.moveTo(xoffset + ml * 0.075 * size, yoffset + ml * 0.05 * size);
+                            cx.lineTo(xoffset + ml * 0.1 * size, yoffset + ml * 0.05 * size);
+                            cx.moveTo(xoffset + ml * 0.075 * size, yoffset + ml * 0.03 * size);
+                            cx.lineTo(xoffset + ml * 0.1 * size, yoffset + ml * 0.03 * size);
+                            cx.moveTo(xoffset + ml * 0.075 * size, yoffset + ml * 0.07 * size);
+                            cx.lineTo(xoffset + ml * 0.1 * size, yoffset + ml * 0.07 * size);
+                            cx.stroke();
+                        }
+                        break;
+                    case 64:
+                        this.name = "Materials Preperation"
+                        this.maxPurchases = 1;
+                        this.baseCopies = 150;
+                        this.description = function(){
+                            return ["Shots fired at half of maximum charge or higher are now guarenteed to be piercing."];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[28].purchased >= 2 && totalItemList[57].purchased >= 2;
+                        }
+                        this.buy = function(){
+                            resilienceChargeGuarenteed = true;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            for(let i = 0; i < 10; i++){
+                                cx.shadowColor = 'rgb(' + 25 * i + ", " +  25 * i + ", 0)";
+                                cx.fillStyle = 'rgb(' + 25 * i + ", " +  25 * i + ", 0)"
+                                cx.fillRect(xoffset + ml * 0.009 * size * i + 0.005 * size * ml, yoffset + 0.04 * size * ml, ml * 0.009 * size, ml * 0.02 * size);
+                            }
+                        }
+                        break;
+                    case 65:
+                        this.name = "Heat-Seeking Redirect";
+                        this.maxPurchases = 4;
+                        this.baseCopies = 200;
+                        this.description = function(){
+                            return ["When resilient bullets pierce, they have a 25% (+25% per stack) chance to adjust their direction of movement to towards the nearest enemy.", "Max Stacks: " + this.maxPurchases, 'Purchased: ' + this.purchased];
+                        }
+                        this.copies = function(){
+                            return this.baseCopies;
+                        }
+                        this.requirements = function(){
+                            return totalItemList[31].purchased >= 2;
+                        }
+                        this.buy = function(){
+                            pierceRedirectChance += 0.25;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.shadowColor = "orange";
+                            cx.fillStyle = "orange";
+                            cx.fillRect(xoffset + ml * 0.02 * size, yoffset + ml * 0.015 * size, ml * 0.02 * size, ml * 0.02 * size);
+                            cx.fillStyle = "gray";
+                            cx.shadowColor = "red";
+                            cx.fillRect(xoffset + ml * 0.09 * size, yoffset + ml * 0.025 * size, ml * 0.01 * size, ml * 0.05 * size);
+                            cx.strokeStyle = 'red';
+                            cx.lineWidth = ml/500;
+                            cx.beginPath();
+                            cx.moveTo(xoffset + ml * 0.03 * size, yoffset + ml * 0.025 * size);
+                            cx.lineTo(xoffset + ml * 0.095 * size, yoffset + ml * 0.05 * size);
+                            cx.stroke();
+                            cx.strokeStyle = 'gray';
+                            cx.shadowColor = 'white';
+                            cx.beginPath();
+                            cx.lineWidth = ml/1000;
+                            cx.moveTo(xoffset + ml * 0.02 * size, yoffset + ml * 0.035 * size);
+                            cx.lineTo(xoffset + ml * 0.01 * size, yoffset + ml * 0.045 * size);
+                            cx.moveTo(xoffset + ml * 0.03 * size, yoffset + ml * 0.035 * size);
+                            cx.lineTo(xoffset + ml * 0.02 * size, yoffset + ml * 0.045 * size);
+                            cx.moveTo(xoffset + ml * 0.02 * size, yoffset + ml * 0.025 * size);
+                            cx.lineTo(xoffset + ml * 0.01 * size, yoffset + ml * 0.035 * size);
+                            cx.stroke();
+                        }
+                        break;
                     default:
                         preGameCycler = true;
                         break;
@@ -3045,6 +3207,18 @@
             if(damageTime < adrenalTime){
                 totalSpeed *= adrenalBonus;
             }
+            if(playerXDirect == 0 && playerYDirect == 0){
+                moving = false;
+                movingRamMulti = 1;
+                movingDamageReduction = 1;
+            } else{
+                moving = true;
+                movingRamMulti = 1 + baseSpeedStatDamage * totalSpeed * speedStatMulti;
+                movingDamageReduction = Math.pow(1 - baseSpeedStatResistance, totalSpeed * speedStatMulti);
+            }
+            if(controlModeActive){
+                totalSpeed /= 3;
+            }
             if(character.x >= 0 && playerXDirect == -1 || character.x <= c.width && playerXDirect == 1){
                 character.x += ml/1000 * totalSpeed * playerXDirect;
             }
@@ -3083,15 +3257,6 @@
                     wrapCycler();
                 }
             }
-            if(playerXDirect == 0 && playerYDirect == 0){
-                moving = false;
-                movingRamMulti = 1;
-                movingDamageReduction = 1;
-            } else{
-                moving = true;
-                movingRamMulti = 1 + baseSpeedStatDamage * totalSpeed * speedStatMulti;
-                movingDamageReduction = Math.pow(1 - baseSpeedStatResistance, totalSpeed * speedStatMulti);
-            }
         }
         var gameRunner = setInterval(function generalUpdate(){
             if(pause == false){
@@ -3123,11 +3288,11 @@
                         break;
                     }
                 }
-                if(shotAvailable == true && shooting == true || shotAvailable == true && autofire == true){
+                if(shotAvailable && shooting && canShoot || shotAvailable  && autofire && canShoot){
                     shotCycler();
                     let tempAimer = new aimer(character.x, character.y, mouseX, mouseY);
                     for(let i = 0; i < playerProjectiles; i++){
-                        playerShoot(tempAimer.x, tempAimer.y, storedCharge, storedCharge/2 + 0.5);
+                        playerShoot(tempAimer.x, tempAimer.y, storedCharge, Math.max(storedCharge/2, 1));
                     }
                     storedCharge = 1;
                 }
@@ -3269,12 +3434,29 @@
                                 ess[t].hp -= totalDamage;
                                 bss[i].interacting.push(enemyTrackerID[t]);
                                 if(bullProperties[i].piercing){
-                                    bss[i].damage -= previousHP * pierceLoss;
+                                    bss[i].damage *= pierceLoss;
                                     bss[i].originalDamage = bss[i].damage;
                                     bullets[i].width = bullets[i].originalWidth;
                                     bullets[i].height = bullets[i].originalHeight;
+                                    if(Math.random() <= pierceRedirectChance && enemies.length > 0){
+                                        let distance = distanceCalc(enemies[0].x, enemies[0].y, bullets[i].x, bullets[i].y);
+                                        let target = 0;
+                                        for(let l = 1; l < enemies.length; l++){
+                                            let tempDistance = distanceCalc(enemies[l].x, enemies[l].y, bullets[i].x, bullets[i].y);
+                                            if(l == t){
+                                                continue;
+                                            }
+                                            if(tempDistance < distance){
+                                                distance = tempDistance;
+                                                target = l;
+                                            }
+                                        }
+                                        let tempaimer = new aimer(bullets[i].x, bullets[i].y, enemies[target].x, enemies[target].y);
+                                        bss[i].xmom = tempaimer.x;
+                                        bss[i].ymom = tempaimer.y;
+                                    }
                                 }
-                                if(bullProperties[i].piercing == false || bss[i].damage <= 0){
+                                if(bullProperties[i].piercing == false){
                                     markedBullets.push(bulletTrackerID[i]);
                                 }
                                 onHitEffects(totalDamage, t, i);
@@ -3308,7 +3490,7 @@
                     health = 0;
                     window.clearInterval(gameRunner)
                     render();
-                } else{
+                } else if(waveActive){
                     health -= maxHealth * healthDegrade/50;
                 }
             }
@@ -3523,7 +3705,7 @@
             if(Math.random() < bounceChance){
                 bouncy = true;
             }
-            if(Math.random() < pierceChance){
+            if(Math.random() < pierceChance || piercingGuarenteedThreshold * maxCharge <= storedCharge && resilienceChargeGuarenteed){
                 piercing = true;
             }
             if(shotSpread > 0){
@@ -3882,13 +4064,17 @@
             }
             if(maxCharge > 1){
                 cx.beginPath();
-                cx.shadowColor = 'cyan';
+                let chargeColor = 'cyan';
+                if(resilienceChargeGuarenteed && maxCharge * piercingGuarenteedThreshold <= storedCharge){
+                    chargeColor = 'yellow';
+                }
+                cx.shadowColor = chargeColor;
                 cx.arc(character.x, character.y, ml/4000 * character.width * storedCharge/maxCharge, 0, Math.PI * 2);
                 if(storedCharge == maxCharge){
-                    cx.fillStyle = 'cyan';
+                    cx.fillStyle = chargeColor;
                     cx.fill();
                 } else{
-                    cx.strokeStyle = 'cyan';
+                    cx.strokeStyle = chargeColor;
                     cx.lineWidth = ml/500;
                     cx.stroke();
                 }
