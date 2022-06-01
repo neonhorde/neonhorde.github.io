@@ -13,12 +13,13 @@
         let ml;
         let chaosMode = false;
         let devMode = false;
-        let devwave = 30;
+        let devwave = 3;
         let playerSize = 25;
         let bulletSize = 10;
         let playerYDirect = 0;
         let playerXDirect = 0;
         let playerSpeed = 5;
+        let playerSpeedMulti = 1;
         let playerProjectiles = 1;
         let moving = false;
         let selfBulletDamage = false;
@@ -38,6 +39,7 @@
         let controlModeActive = false;
         let canShoot = true;
         let globalCounter = 0;
+        let maxHpPerWave = 0;
         let adrenalTime = 100;
         let adrenalBonus = 1;
         let healthDegrade = 0;
@@ -48,7 +50,7 @@
         let wrapCooldown = 150;
         let blinkCooldown = 100;
         let blinkLength = 150;
-        let curseChance = 0.005;
+        let curseChance = 0.004;
         let baseCurseChance = curseChance;
         let curseChanceLoss = 0.5;
         let bounceChance = 0;
@@ -84,7 +86,6 @@
         let shieldRegenDelay = 5
         let shieldRegenTime = 3
         let iframes = 300;
-        let maxHealthGuaranteed = false;
         let lastKillType;
         let roundRegen = 0;
         let levelRegen = 0;
@@ -134,7 +135,7 @@
         let waveActive = true;
         let spawnFinish = -waveActive;
         if(devMode){
-            xp = 1000000000000000000000000000000000000;
+            xp = Infinity;
             waveActive = false;
             spawnFinish = true;
             wave = devwave;
@@ -221,7 +222,8 @@
         }
         function reroll(){
             for(let i = 0; i < offeredItems.length; i++){
-                totalItemList[offeredItems[i].trackerID].baseCopies = Math.round(totalItemList[offeredItems[i].trackerID].baseCopies * 0.8)
+                let targetid = offeredItems[i].trackerID
+                totalItemList[targetid].baseCopies = Math.round(totalItemList[targetid].baseCopies * 0.8)
             }
             itemRoll();
             rerolls--;
@@ -229,11 +231,12 @@
         function purchase(target){
             skillPoints--;
             offeredItems[target].buy();
-            totalItemList[offeredItems[target].trackerID].baseCopies = Math.round(totalItemList[offeredItems[target].trackerID].baseCopies * 1.2)
-            if(totalItemList[offeredItems[target].trackerID].purchased == 0){
+            let targetid = offeredItems[target].trackerID;
+            totalItemList[targetid].baseCopies = Math.round(totalItemList[targetid].baseCopies * 1.2)
+            if(totalItemList[targetid].purchased == 0){
                 purchasedItems.push(offeredItems[target])
             }
-            totalItemList[offeredItems[target].trackerID].purchased++;
+            totalItemList[targetid].purchased++;
             itemRoll();
         }
         function shotstopper(){
@@ -328,10 +331,10 @@
                         pause = true;
                         standardAlpha = 0.5;
                     } else{
-                        pause = false;
-                        if(waveActive == true){
+                        if(waveActive == true && pause){
                             pauseDelay = 250;
                         }
+                        pause = false;
                         standardAlpha = 1;
                     }
                     break;
@@ -2074,7 +2077,6 @@
                         this.buy = function(){
                             globalLifeSteal += 2;
                             healthDegrade += 0.05;
-                            maxHealthGuaranteed = true;
                             curseChance *= curseChanceLoss;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -2514,7 +2516,7 @@
                         }
                         this.buy = function(){
                             damageReduction *= 2;
-                            curseChance = 0.02;
+                            curseChance = baseCurseChance * 4;
                             curseChanceLoss = 1;
                         }
                         this.icon = function(xoffset, yoffset, size){
@@ -2672,6 +2674,91 @@
                             cx.lineTo(xoffset + ml * 0.02 * size, yoffset + ml * 0.045 * size);
                             cx.moveTo(xoffset + ml * 0.02 * size, yoffset + ml * 0.025 * size);
                             cx.lineTo(xoffset + ml * 0.01 * size, yoffset + ml * 0.035 * size);
+                            cx.stroke();
+                        }
+                        break;
+                    case 66:
+                        this.nameGlowColor = "red";
+                        this.name = "Build-Up Armor";
+                        this.maxPurchases = 1;
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Sets your max health to 1. At the end of each wave, gain 6 hp. You gain an additional 2 max health per level."];
+                        }
+                        this.copies = function(){
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            maxHealth = 1;
+                            health = 1;
+                            maxHpPerLevel += 2;
+                            maxHpPerWave += 6;
+                            curseChance *= curseChanceLoss;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "red";
+                            cx.strokeStyle = 'red';
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.lineWidth = ml * 0.005 * size;
+                            cx.beginPath();
+                            cx.arc(xoffset + ml * 0.05 * size, yoffset + ml * 0.05 * size, ml * 0.03 * size, 0 , Math.PI * 2);
+                            cx.stroke();
+                            cx.strokeStyle = 'gray';
+                            cx.strokeRect(xoffset + ml * 0.015 * size, yoffset + ml * 0.015 * size, ml * 0.07 * size, ml * 0.07 * size);
+                        }
+                        break;
+                    case 67:
+                        this.nameGlowColor = "red";
+                        this.name = "Stone Conversion";
+                        this.maxPurchases = 1;
+                        this.baseCopies = Infinity;
+                        this.boxStyle = 'red';
+                        this.boxGlowStyle = 'red';
+                        this.description = function(){
+                            return ["Forbidden Upgrade", "Take half damage, but you move at half speed. This speed reduction reduces speed based bonuses."];
+                        }
+                        this.copies = function(){
+                            if(Math.random() < curseChance){
+                                return this.baseCopies;
+                            } else{
+                                return 0;
+                            }
+                        }
+                        this.requirements = function(){
+                            return true;
+                        }
+                        this.buy = function(){
+                            damageReduction *= 0.5;
+                            playerSpeedMulti *= 0.5;
+                            curseChance *= curseChanceLoss;
+                        }
+                        this.icon = function(xoffset, yoffset, size){
+                            cx.fillStyle = "white";
+                            cx.shadowColor = "cyan";
+                            cx.fillRect(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size, ml * 0.05 * size, ml * 0.05 * size);
+                            cx.lineWidth = ml * 0.005 * size;
+                            cx.shadowColor = "red";
+                            cx.strokeStyle = 'gray';
+                            cx.beginPath();
+                            cx.moveTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.025 * size);
+                            cx.lineTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.075 * size);
+                            cx.moveTo(xoffset + ml * 0.075 * size, yoffset + ml * 0.075 * size);
+                            cx.lineTo(xoffset + ml * 0.025 * size, yoffset + ml * 0.075 * size);
+                            cx.stroke();
+                            cx.strokeStyle = "red";
+                            cx.beginPath();
+                            cx.moveTo(xoffset, yoffset);
+                            cx.lineTo(xoffset + ml * 0.1 * size, yoffset + ml * 0.1 * size);
                             cx.stroke();
                         }
                         break;
@@ -3203,7 +3290,7 @@
             wrapAvailable = true;
         }
         function playerMoveSequence(){
-            let totalSpeed = playerSpeed;
+            let totalSpeed = playerSpeed * playerSpeedMulti;
             if(damageTime < adrenalTime){
                 totalSpeed *= adrenalBonus;
             }
@@ -3334,6 +3421,9 @@
                             }
                         case "Spin":
                             lss[i].angle += 0.01 * enemyOfOrigin.laserSpeed;
+                            if(lss[i].angle >= 360){
+                                lss[i].angle = 0;
+                            }
                             lss[i].xdirect = Math.sin(lss[i].angle);
                             lss[i].ydirect = Math.cos(lss[i].angle);
                             break;
@@ -3363,29 +3453,31 @@
                                 continue aoerunner;
                             }
                         }
-                        for(let t = 0; t < enemies.length; t++){
-                            if(circleSquareHitDetector(enemies[t].x, enemies[t].y, enemies[t].width * ml/2000, enemies[t].height * ml/2000, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000) && ess[t].hp != enemyStatBlock[ess[t].type].hp){
-                                if(ess[t].hp + areass[i].healing * globalEnemyHP >= enemyStatBlock[ess[t].type].hp * globalEnemyHP){
-                                    ess[t].hp = enemyStatBlock[ess[t].type].hp * globalEnemyHP;
-                                    ess[t].healthBarCounter = 110;
-                                    if(areass[i].healconsume == true){
-                                        aoeDestroy(i);
-                                        continue aoerunner;
-                                    }
-                                } else{
-                                    ess[t].hp += areass[i].healing * globalEnemyHP;
-                                    ess[t].healthBarCounter = 100;
-                                    if(areass[i].healconsume == true){
-                                        aoeDestroy(i);
-                                        continue aoerunner;
+                        if(areass[i].healing != 0){
+                            for(let t = 0; t < enemies.length; t++){
+                                if(circleSquareHitDetector(enemies[t].x, enemies[t].y, enemies[t].width * ml/2000, enemies[t].height * ml/2000, aoes[i].x, aoes[i].y, aoes[i].r * ml/1000) && ess[t].hp != enemyStatBlock[ess[t].type].hp){
+                                    if(ess[t].hp + areass[i].healing * globalEnemyHP >= enemyStatBlock[ess[t].type].hp * globalEnemyHP){
+                                        ess[t].hp = enemyStatBlock[ess[t].type].hp * globalEnemyHP;
+                                        ess[t].healthBarCounter = 110;
+                                        if(areass[i].healconsume == true){
+                                            aoeDestroy(i);
+                                            continue aoerunner;
+                                        }
+                                    } else{
+                                        ess[t].hp += areass[i].healing * globalEnemyHP;
+                                        ess[t].healthBarCounter = 100;
+                                        if(areass[i].healconsume == true){
+                                            aoeDestroy(i);
+                                            continue aoerunner;
+                                        }
                                     }
                                 }
                             }
                         }
                         if (areass[i].eoti == "Curse"){
                             let tempAimer = new aimer(aoes[i].x, aoes[i].y, character.x, character.y);
-                            aoes[i].x += tempAimer.x * curseCircleSpeed * ml/1000 * playerSpeed;
-                            aoes[i].y += tempAimer.y * curseCircleSpeed * ml/1000 * playerSpeed;
+                            aoes[i].x += tempAimer.x * curseCircleSpeed * ml/1000 * playerSpeed * playerSpeedMulti;
+                            aoes[i].y += tempAimer.y * curseCircleSpeed * ml/1000 * playerSpeed * playerSpeedMulti;
                         } else{
                             let statCaller = enemyStatBlock[ess[enemyTrackerID.indexOf(areass[i].eoti)].type];
                             switch(statCaller.skillOrigin){
@@ -3438,10 +3530,18 @@
                                     bss[i].originalDamage = bss[i].damage;
                                     bullets[i].width = bullets[i].originalWidth;
                                     bullets[i].height = bullets[i].originalHeight;
-                                    if(Math.random() <= pierceRedirectChance && enemies.length > 0){
-                                        let distance = distanceCalc(enemies[0].x, enemies[0].y, bullets[i].x, bullets[i].y);
-                                        let target = 0;
-                                        for(let l = 1; l < enemies.length; l++){
+                                    if(Math.random() <= pierceRedirectChance && enemies.length > 1){
+                                        let distance;
+                                        let startpoint;
+                                        if(t != 0){
+                                            distance = distanceCalc(enemies[0].x, enemies[0].y, bullets[i].x, bullets[i].y);
+                                            startpoint = 1;
+                                        } else{
+                                            distance = distanceCalc(enemies[1].x, enemies[1].y, bullets[i].x, bullets[i].y);
+                                            startpoint = 2
+                                        }
+                                        let target = startpoint - 1;
+                                        for(let l = startpoint; l < enemies.length; l++){
                                             let tempDistance = distanceCalc(enemies[l].x, enemies[l].y, bullets[i].x, bullets[i].y);
                                             if(l == t){
                                                 continue;
@@ -3452,6 +3552,7 @@
                                             }
                                         }
                                         let tempaimer = new aimer(bullets[i].x, bullets[i].y, enemies[target].x, enemies[target].y);
+                                        console.log(bss[i].damage);
                                         bss[i].xmom = tempaimer.x;
                                         bss[i].ymom = tempaimer.y;
                                     }
@@ -3579,12 +3680,12 @@
                     }
                 } else if (bullProperties[id].looping == true){
                     if(bullets[id].x - ml/2000 * size > c.width){
-                        bullets[id].x = 0 + ml/2000 * size;
+                        bullets[id].x = ml/2000 * size;
                     } else if(bullets[id].x + ml/2000 * size < 0){
                         bullets[id].x = c.width - ml/size/2;
                     }
                     if(bullets[id].y - ml/2000 * size > c.height){
-                        bullets[id].y = 0 + ml/2000 * size;
+                        bullets[id].y = ml/2000 * size;
                     } else if(bullets[id].y + ml/2000 * size < 0){
                         bullets[id].y = c.height - ml/size/2;
                     }
@@ -3751,6 +3852,8 @@
                 killTime = 0;
                 if(enemyCount == 0 && spawnFinish == true){
                     waveActive = false;
+                    maxHealth += maxHpPerWave;
+                    health += maxHpPerWave;
                     shield = maxShield
                     pauseDelay = 0;
                     enemyWaveCounter = 0;
@@ -3772,12 +3875,8 @@
             heal(levelRegen);
             skillPoints++;
             level++;
-            if(health == maxHealth || maxHealthGuaranteed){
-                health += maxHpPerLevel;
-                maxHealth += maxHpPerLevel;
-            } else{
-                heal(maxHpPerLevel * 3);
-            }
+            health += maxHpPerLevel;
+            maxHealth += maxHpPerLevel;
             if(level % 5 == 0){
                 skillPoints += additionalSkillPoints;
             }
